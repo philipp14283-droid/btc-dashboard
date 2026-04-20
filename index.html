@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BTC Dashboard">
+  <title>BTC On-Chain Dashboard</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --orange: #f97316;
+      --red: #ef4444;
+      --btc: #f7931a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 16px;
+    }
+    .title { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
+    .btc-icon {
+      width: 28px; height: 28px; background: var(--btc); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: bold; font-size: 16px;
+    }
+    .refresh-btn {
+      background: #1e293b; border: none; color: var(--text);
+      padding: 8px 14px; border-radius: 10px;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .refresh-btn:hover { background: #334155; }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .refreshing .refresh-icon { animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .price-row {
+      display: flex; justify-content: space-between;
+      align-items: baseline; margin-bottom: 20px; font-size: 14px;
+    }
+    .price { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .price-change { margin-left: 8px; color: var(--text-muted); }
+    .timestamp { font-size: 12px; color: var(--text-dim); }
+    .aggregate {
+      border-radius: 18px; padding: 24px; margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      border: 1px solid;
+    }
+    .aggregate-label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-muted); margin-bottom: 6px;
+    }
+    .aggregate-score { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .aggregate-score-unit { font-size: 14px; color: var(--text-muted); margin-left: 4px; }
+    .aggregate-status { margin-top: 8px; font-weight: 600; }
+    .circle-wrap { position: relative; width: 88px; height: 88px; }
+    .circle-bg, .circle-fill { fill: none; stroke-width: 8; }
+    .circle-bg { stroke: #1e293b; }
+    .circle-fill {
+      stroke-linecap: round;
+      transform: rotate(-90deg); transform-origin: center;
+      transition: stroke-dasharray 0.8s;
+    }
+    .category {
+      margin-bottom: 20px;
+    }
+    .category-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 10px; padding: 0 4px;
+    }
+    .category-title {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-muted); font-weight: 600;
+    }
+    .category-score {
+      font-size: 11px; font-variant-numeric: tabular-nums; color: var(--text-dim);
+    }
+    .grid {
+      display: grid; grid-template-columns: 1fr; gap: 10px;
+    }
+    @media (min-width: 600px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 900px) { .grid-3 { grid-template-columns: 1fr 1fr 1fr; } }
+    .metric-card {
+      border-radius: 14px; padding: 16px; border: 1px solid;
+    }
+    .metric-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 10px;
+    }
+    .metric-title {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text-muted);
+    }
+    .metric-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 5px;
+    }
+    .metric-value {
+      font-size: 24px; font-weight: 700;
+      font-variant-numeric: tabular-nums; margin-bottom: 8px;
+    }
+    .metric-unit { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
+    .metric-footer {
+      display: flex; justify-content: space-between;
+      align-items: center; font-size: 11px;
+    }
+    .metric-label { font-weight: 500; }
+    .metric-score { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+    .metric-extra { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+    .green  { color: var(--green); }
+    .yellow { color: var(--yellow); }
+    .orange { color: var(--orange); }
+    .red    { color: var(--red); }
+    .bg-green  { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.3); }
+    .bg-yellow { background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3); }
+    .bg-orange { background: rgba(249, 115, 22, 0.08); border-color: rgba(249, 115, 22, 0.3); }
+    .bg-red    { background: rgba(239, 68, 68, 0.08);  border-color: rgba(239, 68, 68, 0.3); }
+    .bg-gray   { background: rgba(30, 41, 59, 0.3);    border-color: #334155; }
+    .dot-green  { background: var(--green); }
+    .dot-yellow { background: var(--yellow); }
+    .dot-orange { background: var(--orange); }
+    .dot-red    { background: var(--red); }
+    .dot-gray   { background: #475569; }
+    .error-box {
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.05);
+      padding: 12px; border-radius: 10px; margin-bottom: 16px;
+      font-size: 12px; color: #fca5a5;
+    }
+    .info-toggle {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      margin: 16px 0 8px;
+    }
+    .info-box {
+      border: 1px solid #1e293b; background: rgba(15, 23, 42, 0.5);
+      border-radius: 10px; padding: 14px;
+      font-size: 11px; color: var(--text-muted); line-height: 1.6;
+    }
+    .info-box div { margin-bottom: 6px; }
+    .info-box strong { color: var(--text); }
+    .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div class="loading">Lade Daten…</div>
+  </div>
+
+<script>
+const WORKER_URL = "https://btc-dashboard.y68xps2sdk.workers.dev";
+
+let showInfo = false;
+let lastData = null;
+let lastError = null;
+let isLoading = false;
+
+async function fetchData() {
+  if (isLoading) return;
+  isLoading = true;
+  lastError = null;
+  render();
+
+  try {
+    const r = await fetch(WORKER_URL);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    lastData = await r.json();
+  } catch (e) {
+    lastError = e.message;
+  }
+
+  isLoading = false;
+  render();
+}
+
+// ============ SCORING FUNCTIONS ============
+function scoreMayer(v) {
+  if (v == null) return null;
+  if (v < 1.0)  return { score: 95, level: 'green',  label: 'Unterbewertet' };
+  if (v < 1.5)  return { score: 75, level: 'green',  label: 'Günstig' };
+  if (v < 2.0)  return { score: 50, level: 'yellow', label: 'Neutral' };
+  if (v < 2.4)  return { score: 25, level: 'orange', label: 'Erhöht' };
+  return          { score: 5,  level: 'red',    label: 'Top-Zone' };
+}
+function scoreMvrvZ(v) {
+  if (v == null) return null;
+  if (v < 0)    return { score: 95, level: 'green',  label: 'Historischer Boden' };
+  if (v < 2)    return { score: 75, level: 'green',  label: 'Unterbewertet' };
+  if (v < 4)    return { score: 50, level: 'yellow', label: 'Neutral' };
+  if (v < 6)    return { score: 25, level: 'orange', label: 'Erhitzt' };
+  return          { score: 5,  level: 'red',    label: 'Top-Zone' };
+}
+function scorePi(v) {
+  if (v == null) return null;
+  if (v < 0.5)  return { score: 90, level: 'green',  label: 'Weit vom Top' };
+  if (v < 0.75) return { score: 65, level: 'green',  label: 'Sicher' };
+  if (v < 0.9)  return { score: 40, level: 'yellow', label: 'Achtung' };
+  if (v < 1.0)  return { score: 15, level: 'orange', label: 'Nahe Signal' };
+  return          { score: 0,  level: 'red',    label: 'TOP SIGNAL' };
+}
+function scoreNupl(v) {
+  if (v == null) return null;
+  if (v < 0)     return { score: 95, level: 'green',  label: 'Capitulation' };
+  if (v < 0.25)  return { score: 75, level: 'green',  label: 'Hope/Fear' };
+  if (v < 0.5)   return { score: 55, level: 'yellow', label: 'Optimism' };
+  if (v < 0.75)  return { score: 25, level: 'orange', label: 'Belief' };
+  return           { score: 5,  level: 'red',    label: 'Euphoria' };
+}
+function scoreSopr(v) {
+  if (v == null) return null;
+  if (v < 0.97)  return { score: 90, level: 'green',  label: 'Kapitulation' };
+  if (v < 1.0)   return { score: 70, level: 'green',  label: 'Verlust-Realisierung' };
+  if (v < 1.03)  return { score: 45, level: 'yellow', label: 'Übergang' };
+  if (v < 1.05)  return { score: 30, level: 'orange', label: 'Gewinnmitnahme' };
+  return           { score: 10, level: 'red',    label: 'Starke Gewinne' };
+}
+function scoreSupplyProfit(pct) {
+  if (pct == null) return null;
+  if (pct < 0.5)   return { score: 90, level: 'green',  label: 'Bärenmarkt-Boden' };
+  if (pct < 0.7)   return { score: 70, level: 'green',  label: 'Unterbewertet' };
+  if (pct < 0.85)  return { score: 50, level: 'yellow', label: 'Normal' };
+  if (pct < 0.95)  return { score: 25, level: 'orange', label: 'Erhitzt' };
+  return             { score: 5,  level: 'red',    label: 'Euphorie' };
+}
+function scoreFG(v) {
+  if (v == null) return null;
+  if (v < 25) return { score: 90, level: 'green',  label: 'Extreme Angst = Chance' };
+  if (v < 45) return { score: 65, level: 'green',  label: 'Angst' };
+  if (v < 55) return { score: 50, level: 'yellow', label: 'Neutral' };
+  if (v < 75) return { score: 25, level: 'orange', label: 'Gier' };
+  return         { score: 5,  level: 'red',    label: 'Extreme Gier' };
+}
+function scoreDD(pct) {
+  if (pct == null) return null;
+  const dd = Math.abs(pct);
+  if (dd > 70) return { score: 95, level: 'green',  label: 'Kapitulationszone' };
+  if (dd > 40) return { score: 75, level: 'green',  label: 'Starker Abschlag' };
+  if (dd > 20) return { score: 55, level: 'yellow', label: 'Moderat' };
+  if (dd > 5)  return { score: 35, level: 'yellow', label: 'Nahe ATH' };
+  return          { score: 15, level: 'orange', label: 'Am/über ATH' };
+}
+
+function aggregateLevel(score) {
+  if (score == null) return { level: 'gray',   label: 'Lade…',        icon: '⋯' };
+  if (score >= 75)   return { level: 'green',  label: 'Akkumulation', icon: '❄️' };
+  if (score >= 55)   return { level: 'green',  label: 'Günstig',      icon: '📈' };
+  if (score >= 40)   return { level: 'yellow', label: 'Neutral',      icon: '⚖️' };
+  if (score >= 25)   return { level: 'orange', label: 'Vorsicht',     icon: '⚠️' };
+  return                { level: 'red',    label: 'Distribution', icon: '🔥' };
+}
+
+function catAvg(scores) {
+  const valid = scores.filter(Boolean);
+  if (!valid.length) return null;
+  return Math.round(valid.reduce((a, s) => a + s.score, 0) / valid.length);
+}
+
+function fmt(n, digits = 2) {
+  if (n == null) return '—';
+  return n.toLocaleString('de-CH', { maximumFractionDigits: digits, minimumFractionDigits: digits });
+}
+function fmtInt(n) {
+  if (n == null) return '—';
+  return n.toLocaleString('de-CH', { maximumFractionDigits: 0 });
+}
+
+function card(title, desc, value, unit, score, extra) {
+  const level = score?.level || 'gray';
+  return `
+    <div class="metric-card bg-${level}">
+      <div class="metric-header">
+        <div>
+          <div class="metric-title">${title}</div>
+          <div class="metric-desc">${desc}</div>
+        </div>
+        <div class="dot dot-${level}"></div>
+      </div>
+      <div class="metric-value">
+        ${value != null ? value : '—'}${unit ? `<span class="metric-unit">${unit}</span>` : ''}
+      </div>
+      ${score ? `
+        <div class="metric-footer">
+          <span class="metric-label ${level}">${score.label}</span>
+          <span class="metric-score">Score ${score.score}</span>
+        </div>
+      ` : ''}
+      ${extra ? `<div class="metric-extra">${extra}</div>` : ''}
+    </div>
+  `;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const d = lastData?.data || {};
+
+  const drawdownPct = (d.price_chf && d.ath_chf)
+    ? ((d.price_chf - d.ath_chf) / d.ath_chf) * 100 : null;
+
+  // Scores
+  const mayerS = scoreMayer(d.mayer_multiple);
+  const mvrvS = scoreMvrvZ(d.mvrv_z);
+  const piS = scorePi(d.pi_cycle_ratio);
+  const nuplS = scoreNupl(d.nupl);
+  const soprS = scoreSopr(d.sopr);
+  const supS = scoreSupplyProfit(d.supply_in_profit_pct);
+  const fgS = scoreFG(d.fear_greed);
+  const ddS = scoreDD(drawdownPct);
+
+  // Kategorie-Scores
+  const bewertungScore = catAvg([mayerS, mvrvS]);
+  const holderScore = catAvg([nuplS, soprS, supS]);
+  const zyklusScore = catAvg([piS, ddS]);
+  const stimmungScore = catAvg([fgS]);
+
+  // Aggregat
+  const allScores = [mayerS, mvrvS, piS, nuplS, soprS, supS, fgS, ddS].filter(Boolean);
+  const agg = allScores.length ? Math.round(allScores.reduce((a, s) => a + s.score, 0) / allScores.length) : null;
+  const aggInfo = aggregateLevel(agg);
+
+  const timestamp = lastData?.timestamp ? new Date(lastData.timestamp).toLocaleString('de-CH') : '';
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="title">
+        <div class="btc-icon">₿</div>
+        <div>BTC On-Chain Dashboard</div>
+      </div>
+      <button class="refresh-btn ${isLoading ? 'refreshing' : ''}" onclick="fetchData()" ${isLoading ? 'disabled' : ''}>
+        <span class="refresh-icon">↻</span>
+        ${isLoading ? 'Lädt…' : 'Aktualisieren'}
+      </button>
+    </div>
+
+    ${lastError ? `<div class="error-box"><strong>Fehler:</strong> ${lastError}</div>` : ''}
+
+    ${d.price_chf ? `
+      <div class="price-row">
+        <div>
+          <span class="price">${fmtInt(d.price_chf)} CHF</span>
+          ${drawdownPct != null ? `<span class="price-change">${drawdownPct.toFixed(1)}% vs ATH</span>` : ''}
+        </div>
+        <div class="timestamp">${timestamp}</div>
+      </div>
+    ` : ''}
+
+    <div class="aggregate bg-${aggInfo.level}">
+      <div>
+        <div class="aggregate-label">Aggregat-Score · 8 Metriken</div>
+        <div><span class="aggregate-score">${agg ?? '—'}</span><span class="aggregate-score-unit">/ 100</span></div>
+        <div class="aggregate-status ${aggInfo.level}">${aggInfo.icon} ${aggInfo.label}</div>
+      </div>
+      <div class="circle-wrap">
+        <svg viewBox="0 0 100 100" width="88" height="88">
+          <circle class="circle-bg" cx="50" cy="50" r="42"/>
+          <circle class="circle-fill ${aggInfo.level}"
+                  stroke="currentColor" cx="50" cy="50" r="42"
+                  stroke-dasharray="${(agg || 0) * 2.64} 264"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- BEWERTUNG -->
+    <div class="category">
+      <div class="category-header">
+        <span class="category-title">🔍 Bewertung</span>
+        ${bewertungScore != null ? `<span class="category-score">Ø ${bewertungScore}</span>` : ''}
+      </div>
+      <div class="grid">
+        ${card('MVRV Z-Score', 'Markt- vs Realized Cap', fmt(d.mvrv_z), null, mvrvS, '<0 Boden · >7 Top-Zone')}
+        ${card('Mayer Multiple', 'Preis / 200-Tage MA', fmt(d.mayer_multiple), null, mayerS, '<1.0 günstig · >2.4 Top')}
+      </div>
+    </div>
+
+    <!-- HOLDER-VERHALTEN -->
+    <div class="category">
+      <div class="category-header">
+        <span class="category-title">👥 Holder-Verhalten</span>
+        ${holderScore != null ? `<span class="category-score">Ø ${holderScore}</span>` : ''}
+      </div>
+      <div class="grid grid-3">
+        ${card('NUPL', 'Unrealisierte Gewinne', fmt(d.nupl), null, nuplS, 'Capitulation → Euphoria')}
+        ${card('SOPR', 'Spent Output Profit Ratio', fmt(d.sopr, 3), null, soprS, '<1 Verluste · >1 Gewinne')}
+        ${card('Supply in Profit', 'Anteil Coins im Gewinn', d.supply_in_profit_pct != null ? fmt(d.supply_in_profit_pct * 100, 1) : null, '%', supS, '<50% Boden · >95% Top')}
+      </div>
+    </div>
+
+    <!-- ZYKLUS -->
+    <div class="category">
+      <div class="category-header">
+        <span class="category-title">📊 Zyklus-Position</span>
+        ${zyklusScore != null ? `<span class="category-score">Ø ${zyklusScore}</span>` : ''}
+      </div>
+      <div class="grid">
+        ${card('Pi Cycle Top', '111DMA / (350DMA × 2)', fmt(d.pi_cycle_ratio), null, piS, 'Signal bei Wert ≥ 1.00')}
+        ${card('Drawdown vom ATH', 'Wie weit vom Hoch', drawdownPct != null ? drawdownPct.toFixed(1) : '—', '%', ddS, d.ath_chf ? `ATH: ${fmtInt(d.ath_chf)} CHF` : '')}
+      </div>
+    </div>
+
+    <!-- STIMMUNG -->
+    <div class="category">
+      <div class="category-header">
+        <span class="category-title">💭 Stimmung</span>
+        ${stimmungScore != null ? `<span class="category-score">Ø ${stimmungScore}</span>` : ''}
+      </div>
+      <div class="grid">
+        ${card('Fear & Greed', 'Markt-Sentiment', d.fear_greed ?? '—', '/ 100', fgS, d.fear_greed_label || '')}
+        ${d.hashrate_30d_change_pct != null ? card('Hashrate 30d', 'Netzwerkgesundheit (Bonus)', d.hashrate_30d_change_pct.toFixed(1), '%', null, d.hashrate_ehs ? `${fmtInt(d.hashrate_ehs)} EH/s` : '') : ''}
+      </div>
+    </div>
+
+    <button class="info-toggle" onclick="showInfo = !showInfo; render()">
+      ℹ️ ${showInfo ? 'Methodik ausblenden' : 'Methodik & Quellen'}
+    </button>
+
+    ${showInfo ? `
+      <div class="info-box">
+        <div><strong>Scoring:</strong> Jede Metrik → 0–100. Aggregat = Durchschnitt aus 8 Metriken. Über 75 = Akkumulation · 55–75 = günstig · 40–55 = neutral · 25–40 = Vorsicht · unter 25 = Distribution.</div>
+        <div><strong>Kategorien:</strong> Bewertung (2), Holder-Verhalten (3), Zyklus (2), Stimmung (1). Hashrate ist Bonus-Info (nicht im Score).</div>
+        <div><strong>Quellen:</strong> Bitcoin Lab v2 API (MVRV Z, NUPL, SOPR, Supply in Profit), Kraken (Preis, Historie), alternative.me (Fear & Greed), mempool.space (Hashrate), Frankfurter (USD→CHF).</div>
+        <div><strong>Architektur:</strong> Dashboard → Cloudflare Worker → externe APIs. Token sicher als verschlüsseltes Secret.</div>
+        <div style="padding-top: 8px; border-top: 1px solid #1e293b; margin-top: 8px;">Kein Trading-Signal. Makro-Orientierung für Holder.</div>
+      </div>
+    ` : ''}
+  `;
+}
+
+fetchData();
+</script>
+</body>
+</html>
