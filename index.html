@@ -9,151 +9,208 @@
   <title>BTC On-Chain Dashboard</title>
   <style>
     :root {
-      --bg: #020617;
-      --text: #f1f5f9;
+      --bg: #0a0e1a;
+      --bg-card: #0f1629;
+      --text: #e2e8f0;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
-      --green: #10b981;
-      --yellow: #f59e0b;
-      --orange: #f97316;
-      --red: #ef4444;
+      --border: #1e2a44;
+      --green: #22d3ee;
+      --yellow: #fbbf24;
+      --orange: #fb923c;
+      --red: #f87171;
       --btc: #f7931a;
+      --accent: #3b82f6;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
       background: var(--bg); color: var(--text);
-      min-height: 100vh; padding: 20px;
+      min-height: 100vh; padding: 16px;
       -webkit-font-smoothing: antialiased;
     }
     .container { max-width: 900px; margin: 0 auto; }
+
     .header {
       display: flex; justify-content: space-between;
       align-items: center; margin-bottom: 16px;
     }
-    .title { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
+    .title { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; }
     .btc-icon {
       width: 28px; height: 28px; background: var(--btc); border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       color: white; font-weight: bold; font-size: 16px;
     }
     .refresh-btn {
-      background: #1e293b; border: none; color: var(--text);
-      padding: 8px 14px; border-radius: 10px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 14px; border-radius: 10px;
       font-size: 13px; cursor: pointer;
       display: flex; align-items: center; gap: 6px;
     }
-    .refresh-btn:hover { background: #334155; }
-    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .refresh-btn:active { transform: scale(0.97); }
+    .refresh-btn:disabled { opacity: 0.5; }
     .refreshing .refresh-icon { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
     .price-row {
       display: flex; justify-content: space-between;
-      align-items: baseline; margin-bottom: 20px; font-size: 14px;
+      align-items: baseline; margin-bottom: 16px; font-size: 14px;
     }
-    .price { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
-    .price-change { margin-left: 8px; color: var(--text-muted); }
-    .timestamp { font-size: 12px; color: var(--text-dim); }
+    .price { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .price-change { margin-left: 8px; color: var(--text-muted); font-size: 13px; }
+    .timestamp { font-size: 11px; color: var(--text-dim); }
+
     .aggregate {
-      border-radius: 18px; padding: 24px; margin-bottom: 24px;
+      border-radius: 16px; padding: 20px; margin-bottom: 24px;
       display: flex; justify-content: space-between; align-items: center;
-      border: 1px solid;
+      border: 1px solid; background: var(--bg-card);
     }
     .aggregate-label {
-      font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
       color: var(--text-muted); margin-bottom: 6px;
     }
-    .aggregate-score { font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .aggregate-score-unit { font-size: 14px; color: var(--text-muted); margin-left: 4px; }
-    .aggregate-status { margin-top: 8px; font-weight: 600; }
-    .circle-wrap { position: relative; width: 88px; height: 88px; }
-    .circle-bg, .circle-fill { fill: none; stroke-width: 8; }
-    .circle-bg { stroke: #1e293b; }
+    .aggregate-score { font-size: 42px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+    .aggregate-score-unit { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
+    .aggregate-status { margin-top: 10px; font-weight: 600; font-size: 15px; }
+    .circle-wrap { position: relative; width: 84px; height: 84px; }
+    .circle-bg, .circle-fill { fill: none; stroke-width: 7; }
+    .circle-bg { stroke: var(--border); }
     .circle-fill {
       stroke-linecap: round;
       transform: rotate(-90deg); transform-origin: center;
       transition: stroke-dasharray 0.8s;
     }
-    .category {
-      margin-bottom: 20px;
-    }
+
+    .category { margin-bottom: 16px; }
     .category-header {
       display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 10px; padding: 0 4px;
+      margin-bottom: 8px; padding: 0 4px;
     }
     .category-title {
-      font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
       color: var(--text-muted); font-weight: 600;
     }
     .category-score {
       font-size: 11px; font-variant-numeric: tabular-nums; color: var(--text-dim);
     }
-    .grid {
-      display: grid; grid-template-columns: 1fr; gap: 10px;
-    }
-    @media (min-width: 600px) { .grid { grid-template-columns: 1fr 1fr; } }
-    @media (min-width: 900px) { .grid-3 { grid-template-columns: 1fr 1fr 1fr; } }
+
+    .grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
+
     .metric-card {
-      border-radius: 14px; padding: 16px; border: 1px solid;
+      border-radius: 14px; border: 1px solid;
+      overflow: hidden; transition: border-color 0.2s;
     }
-    .metric-header {
+    .metric-card.expanded { grid-column: 1 / -1; }
+    .metric-head {
+      padding: 14px 16px; cursor: pointer;
       display: flex; justify-content: space-between;
-      align-items: flex-start; margin-bottom: 10px;
+      align-items: flex-start; gap: 12px;
     }
-    .metric-title {
+    .metric-head:active { opacity: 0.8; }
+    .metric-main { flex: 1; min-width: 0; }
+    .metric-title-row {
+      display: flex; align-items: center; gap: 6px;
       font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--text-muted);
+      color: var(--text-muted); margin-bottom: 2px;
     }
-    .metric-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-    .dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      flex-shrink: 0; margin-top: 5px;
+    .metric-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
+    .metric-value-row {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
     }
     .metric-value {
-      font-size: 24px; font-weight: 700;
-      font-variant-numeric: tabular-nums; margin-bottom: 8px;
+      font-size: 22px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
     }
-    .metric-unit { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
-    .metric-footer {
+    .metric-unit { font-size: 12px; color: var(--text-muted); margin-left: 3px; }
+    .metric-label { font-size: 11px; font-weight: 500; }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 4px;
+    }
+    .chevron {
+      color: var(--text-dim); font-size: 10px;
+      transition: transform 0.2s;
+      margin-top: 3px;
+    }
+    .metric-card.expanded .chevron { transform: rotate(180deg); }
+
+    .metric-body {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease;
+      border-top: 1px solid transparent;
+    }
+    .metric-card.expanded .metric-body {
+      max-height: 500px;
+      border-top-color: var(--border);
+    }
+    .metric-body-inner { padding: 14px 16px; }
+    .metric-info {
+      font-size: 12px; line-height: 1.55; color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .metric-info strong { color: var(--text); }
+    .metric-thresholds {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin-bottom: 14px; font-size: 10px;
+    }
+    .threshold {
+      padding: 3px 8px; border-radius: 6px;
+      background: rgba(30, 42, 68, 0.5);
+      color: var(--text-muted);
+    }
+
+    .chart-wrap {
+      position: relative; margin-top: 4px;
+      background: rgba(10, 14, 26, 0.5);
+      border-radius: 8px; padding: 8px 4px 4px;
+    }
+    .chart-wrap svg { width: 100%; height: 160px; display: block; }
+    .chart-tooltip {
+      position: absolute; top: 8px; left: 12px;
+      font-size: 11px; color: var(--text); pointer-events: none;
+      font-variant-numeric: tabular-nums;
+    }
+    .chart-tooltip .t-val { font-weight: 600; }
+    .chart-tooltip .t-date { color: var(--text-dim); margin-left: 6px; font-size: 10px; }
+    .chart-range {
       display: flex; justify-content: space-between;
-      align-items: center; font-size: 11px;
+      font-size: 9px; color: var(--text-dim);
+      padding: 4px 4px 0;
     }
-    .metric-label { font-weight: 500; }
-    .metric-score { color: var(--text-dim); font-variant-numeric: tabular-nums; }
-    .metric-extra { font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+
     .green  { color: var(--green); }
     .yellow { color: var(--yellow); }
     .orange { color: var(--orange); }
     .red    { color: var(--red); }
-    .bg-green  { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.3); }
-    .bg-yellow { background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3); }
-    .bg-orange { background: rgba(249, 115, 22, 0.08); border-color: rgba(249, 115, 22, 0.3); }
-    .bg-red    { background: rgba(239, 68, 68, 0.08);  border-color: rgba(239, 68, 68, 0.3); }
-    .bg-gray   { background: rgba(30, 41, 59, 0.3);    border-color: #334155; }
+    .bg-green  { background: rgba(34, 211, 238, 0.06); border-color: rgba(34, 211, 238, 0.3); }
+    .bg-yellow { background: rgba(251, 191, 36, 0.06); border-color: rgba(251, 191, 36, 0.3); }
+    .bg-orange { background: rgba(251, 146, 60, 0.06); border-color: rgba(251, 146, 60, 0.3); }
+    .bg-red    { background: rgba(248, 113, 113, 0.06); border-color: rgba(248, 113, 113, 0.3); }
+    .bg-gray   { background: var(--bg-card); border-color: var(--border); }
     .dot-green  { background: var(--green); }
     .dot-yellow { background: var(--yellow); }
     .dot-orange { background: var(--orange); }
     .dot-red    { background: var(--red); }
-    .dot-gray   { background: #475569; }
+    .dot-gray   { background: var(--text-dim); }
+    .stroke-green  { stroke: var(--green); }
+    .stroke-yellow { stroke: var(--yellow); }
+    .stroke-orange { stroke: var(--orange); }
+    .stroke-red    { stroke: var(--red); }
+    .stroke-gray   { stroke: var(--text-dim); }
+    .fill-green  { fill: var(--green); }
+    .fill-yellow { fill: var(--yellow); }
+    .fill-orange { fill: var(--orange); }
+    .fill-red    { fill: var(--red); }
+    .fill-gray   { fill: var(--text-dim); }
+
     .error-box {
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      background: rgba(239, 68, 68, 0.05);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      background: rgba(248, 113, 113, 0.05);
       padding: 12px; border-radius: 10px; margin-bottom: 16px;
       font-size: 12px; color: #fca5a5;
     }
-    .info-toggle {
-      background: none; border: none; color: var(--text-muted);
-      font-size: 12px; cursor: pointer;
-      display: flex; align-items: center; gap: 6px;
-      margin: 16px 0 8px;
-    }
-    .info-box {
-      border: 1px solid #1e293b; background: rgba(15, 23, 42, 0.5);
-      border-radius: 10px; padding: 14px;
-      font-size: 11px; color: var(--text-muted); line-height: 1.6;
-    }
-    .info-box div { margin-bottom: 6px; }
-    .info-box strong { color: var(--text); }
     .loading { text-align: center; padding: 40px; color: var(--text-muted); }
   </style>
 </head>
@@ -165,10 +222,10 @@
 <script>
 const WORKER_URL = "https://btc-dashboard.y68xps2sdk.workers.dev";
 
-let showInfo = false;
 let lastData = null;
 let lastError = null;
 let isLoading = false;
+let expandedCard = null;  // key of expanded metric
 
 async function fetchData() {
   if (isLoading) return;
@@ -188,72 +245,15 @@ async function fetchData() {
   render();
 }
 
-// ============ SCORING FUNCTIONS ============
-function scoreMayer(v) {
-  if (v == null) return null;
-  if (v < 1.0)  return { score: 95, level: 'green',  label: 'Unterbewertet' };
-  if (v < 1.5)  return { score: 75, level: 'green',  label: 'Günstig' };
-  if (v < 2.0)  return { score: 50, level: 'yellow', label: 'Neutral' };
-  if (v < 2.4)  return { score: 25, level: 'orange', label: 'Erhöht' };
-  return          { score: 5,  level: 'red',    label: 'Top-Zone' };
-}
-function scoreMvrvZ(v) {
-  if (v == null) return null;
-  if (v < 0)    return { score: 95, level: 'green',  label: 'Historischer Boden' };
-  if (v < 2)    return { score: 75, level: 'green',  label: 'Unterbewertet' };
-  if (v < 4)    return { score: 50, level: 'yellow', label: 'Neutral' };
-  if (v < 6)    return { score: 25, level: 'orange', label: 'Erhitzt' };
-  return          { score: 5,  level: 'red',    label: 'Top-Zone' };
-}
-function scorePi(v) {
-  if (v == null) return null;
-  if (v < 0.5)  return { score: 90, level: 'green',  label: 'Weit vom Top' };
-  if (v < 0.75) return { score: 65, level: 'green',  label: 'Sicher' };
-  if (v < 0.9)  return { score: 40, level: 'yellow', label: 'Achtung' };
-  if (v < 1.0)  return { score: 15, level: 'orange', label: 'Nahe Signal' };
-  return          { score: 0,  level: 'red',    label: 'TOP SIGNAL' };
-}
-function scoreNupl(v) {
-  if (v == null) return null;
-  if (v < 0)     return { score: 95, level: 'green',  label: 'Capitulation' };
-  if (v < 0.25)  return { score: 75, level: 'green',  label: 'Hope/Fear' };
-  if (v < 0.5)   return { score: 55, level: 'yellow', label: 'Optimism' };
-  if (v < 0.75)  return { score: 25, level: 'orange', label: 'Belief' };
-  return           { score: 5,  level: 'red',    label: 'Euphoria' };
-}
-function scoreSopr(v) {
-  if (v == null) return null;
-  if (v < 0.97)  return { score: 90, level: 'green',  label: 'Kapitulation' };
-  if (v < 1.0)   return { score: 70, level: 'green',  label: 'Verlust-Realisierung' };
-  if (v < 1.03)  return { score: 45, level: 'yellow', label: 'Übergang' };
-  if (v < 1.05)  return { score: 30, level: 'orange', label: 'Gewinnmitnahme' };
-  return           { score: 10, level: 'red',    label: 'Starke Gewinne' };
-}
-function scoreSupplyProfit(pct) {
-  if (pct == null) return null;
-  if (pct < 0.5)   return { score: 90, level: 'green',  label: 'Bärenmarkt-Boden' };
-  if (pct < 0.7)   return { score: 70, level: 'green',  label: 'Unterbewertet' };
-  if (pct < 0.85)  return { score: 50, level: 'yellow', label: 'Normal' };
-  if (pct < 0.95)  return { score: 25, level: 'orange', label: 'Erhitzt' };
-  return             { score: 5,  level: 'red',    label: 'Euphorie' };
-}
-function scoreFG(v) {
-  if (v == null) return null;
-  if (v < 25) return { score: 90, level: 'green',  label: 'Extreme Angst = Chance' };
-  if (v < 45) return { score: 65, level: 'green',  label: 'Angst' };
-  if (v < 55) return { score: 50, level: 'yellow', label: 'Neutral' };
-  if (v < 75) return { score: 25, level: 'orange', label: 'Gier' };
-  return         { score: 5,  level: 'red',    label: 'Extreme Gier' };
-}
-function scoreDD(pct) {
-  if (pct == null) return null;
-  const dd = Math.abs(pct);
-  if (dd > 70) return { score: 95, level: 'green',  label: 'Kapitulationszone' };
-  if (dd > 40) return { score: 75, level: 'green',  label: 'Starker Abschlag' };
-  if (dd > 20) return { score: 55, level: 'yellow', label: 'Moderat' };
-  if (dd > 5)  return { score: 35, level: 'yellow', label: 'Nahe ATH' };
-  return          { score: 15, level: 'orange', label: 'Am/über ATH' };
-}
+// ============ SCORING ============
+function scoreMayer(v)   { if(v==null)return null; if(v<1.0)return{score:95,level:'green',label:'Unterbewertet'}; if(v<1.5)return{score:75,level:'green',label:'Günstig'}; if(v<2.0)return{score:50,level:'yellow',label:'Neutral'}; if(v<2.4)return{score:25,level:'orange',label:'Erhöht'}; return{score:5,level:'red',label:'Top-Zone'}; }
+function scoreMvrvZ(v)   { if(v==null)return null; if(v<0)return{score:95,level:'green',label:'Historischer Boden'}; if(v<2)return{score:75,level:'green',label:'Unterbewertet'}; if(v<4)return{score:50,level:'yellow',label:'Neutral'}; if(v<6)return{score:25,level:'orange',label:'Erhitzt'}; return{score:5,level:'red',label:'Top-Zone'}; }
+function scorePi(v)      { if(v==null)return null; if(v<0.5)return{score:90,level:'green',label:'Weit vom Top'}; if(v<0.75)return{score:65,level:'green',label:'Sicher'}; if(v<0.9)return{score:40,level:'yellow',label:'Achtung'}; if(v<1.0)return{score:15,level:'orange',label:'Nahe Signal'}; return{score:0,level:'red',label:'TOP SIGNAL'}; }
+function scoreNupl(v)    { if(v==null)return null; if(v<0)return{score:95,level:'green',label:'Capitulation'}; if(v<0.25)return{score:75,level:'green',label:'Hope/Fear'}; if(v<0.5)return{score:55,level:'yellow',label:'Optimism'}; if(v<0.75)return{score:25,level:'orange',label:'Belief'}; return{score:5,level:'red',label:'Euphoria'}; }
+function scoreSopr(v)    { if(v==null)return null; if(v<0.97)return{score:90,level:'green',label:'Kapitulation'}; if(v<1.0)return{score:70,level:'green',label:'Verlust-Realisierung'}; if(v<1.03)return{score:45,level:'yellow',label:'Übergang'}; if(v<1.05)return{score:30,level:'orange',label:'Gewinnmitnahme'}; return{score:10,level:'red',label:'Starke Gewinne'}; }
+function scoreSupply(p)  { if(p==null)return null; if(p<0.5)return{score:90,level:'green',label:'Bärenmarkt-Boden'}; if(p<0.7)return{score:70,level:'green',label:'Unterbewertet'}; if(p<0.85)return{score:50,level:'yellow',label:'Normal'}; if(p<0.95)return{score:25,level:'orange',label:'Erhitzt'}; return{score:5,level:'red',label:'Euphorie'}; }
+function scoreFG(v)      { if(v==null)return null; if(v<25)return{score:90,level:'green',label:'Extreme Angst'}; if(v<45)return{score:65,level:'green',label:'Angst'}; if(v<55)return{score:50,level:'yellow',label:'Neutral'}; if(v<75)return{score:25,level:'orange',label:'Gier'}; return{score:5,level:'red',label:'Extreme Gier'}; }
+function scoreDD(pct)    { if(pct==null)return null; const dd=Math.abs(pct); if(dd>70)return{score:95,level:'green',label:'Kapitulationszone'}; if(dd>40)return{score:75,level:'green',label:'Starker Abschlag'}; if(dd>20)return{score:55,level:'yellow',label:'Moderat'}; if(dd>5)return{score:35,level:'yellow',label:'Nahe ATH'}; return{score:15,level:'orange',label:'Am/über ATH'}; }
 
 function aggregateLevel(score) {
   if (score == null) return { level: 'gray',   label: 'Lade…',        icon: '⋯' };
@@ -265,41 +265,288 @@ function aggregateLevel(score) {
 }
 
 function catAvg(scores) {
-  const valid = scores.filter(Boolean);
-  if (!valid.length) return null;
-  return Math.round(valid.reduce((a, s) => a + s.score, 0) / valid.length);
+  const v = scores.filter(Boolean);
+  if (!v.length) return null;
+  return Math.round(v.reduce((a, s) => a + s.score, 0) / v.length);
 }
 
 function fmt(n, digits = 2) {
-  if (n == null) return '—';
+  if (n == null || isNaN(n)) return '—';
   return n.toLocaleString('de-CH', { maximumFractionDigits: digits, minimumFractionDigits: digits });
 }
 function fmtInt(n) {
-  if (n == null) return '—';
+  if (n == null || isNaN(n)) return '—';
   return n.toLocaleString('de-CH', { maximumFractionDigits: 0 });
 }
+function fmtDate(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('de-CH', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
-function card(title, desc, value, unit, score, extra) {
-  const level = score?.level || 'gray';
+// ============ METRIC DEFINITIONS ============
+const METRICS = {
+  mvrv_z: {
+    title: 'MVRV Z-Score',
+    desc: 'Markt- vs Realized Cap, normalisiert',
+    info: '<strong>MVRV Z-Score</strong> misst, wie weit Bitcoins Marktwert von seinem fundamentalen "Realized Value" entfernt ist, statistisch normalisiert. Die Top-1-Metrik für Makro-Zyklus-Analyse. Historische Böden unter 0, historische Tops über 7.',
+    thresholds: ['< 0 Boden', '0-4 Normal', '4-6 Erhitzt', '> 6 Top-Zone'],
+    score: scoreMvrvZ,
+    format: v => fmt(v),
+    category: 'Bewertung',
+  },
+  mayer: {
+    title: 'Mayer Multiple',
+    desc: 'Preis / 200-Tage MA',
+    info: '<strong>Mayer Multiple</strong> setzt den aktuellen Preis ins Verhältnis zum 200-Tage-Durchschnitt. Robuste, einfache Bewertungsmetrik. Unter 1.0 = günstig, über 2.4 = historisch nahe Tops.',
+    thresholds: ['< 1.0 Günstig', '1.5-2.0 Neutral', '> 2.4 Top-Zone'],
+    score: scoreMayer,
+    format: v => fmt(v),
+    category: 'Bewertung',
+    historyKey: 'mayer',
+  },
+  nupl: {
+    title: 'NUPL',
+    desc: 'Net Unrealized Profit/Loss',
+    info: '<strong>NUPL</strong> zeigt, wie viel Prozent aller Coins im unrealisierten Gewinn sind. Phasen: Capitulation → Hope/Fear → Optimism → Belief → Euphoria. Über 0.75 historisch Zyklushochs.',
+    thresholds: ['< 0 Capitulation', '0.25-0.5 Optimism', '> 0.75 Euphoria'],
+    score: scoreNupl,
+    format: v => fmt(v),
+    category: 'Holder',
+  },
+  sopr: {
+    title: 'SOPR',
+    desc: 'Spent Output Profit Ratio',
+    info: '<strong>SOPR</strong> misst, ob bewegte Coins im Gewinn oder Verlust verkauft werden. Unter 1 = Holder realisieren Verluste (Kapitulation). Über 1.05 = starke Gewinnmitnahmen (typisch Bullmarkt).',
+    thresholds: ['< 1.0 Verluste', '1.0-1.05 Normal', '> 1.05 Gewinne'],
+    score: scoreSopr,
+    format: v => fmt(v, 3),
+    category: 'Holder',
+  },
+  supply_in_profit_pct: {
+    title: 'Supply in Profit',
+    desc: 'Anteil Coins im Gewinn',
+    info: '<strong>Supply in Profit</strong> ist der Prozentsatz aller existierenden Coins, die aktuell über ihrem Kaufpreis notieren. Unter 50% = Bärenmarkt-Boden nahe. Über 95% = euphorische Zone.',
+    thresholds: ['< 50% Boden', '70-85% Normal', '> 95% Euphorie'],
+    score: scoreSupply,
+    format: v => fmt(v * 100, 1) + '%',
+    category: 'Holder',
+  },
+  pi_cycle: {
+    title: 'Pi Cycle Top',
+    desc: '111DMA / (350DMA × 2)',
+    info: '<strong>Pi Cycle Top Indicator</strong> – Wenn der 111-Tage-MA den doppelten 350-Tage-MA nach oben kreuzt, war das historisch innerhalb weniger Tage vom Zyklushoch. 2013, 2017, 2021 korrekt.',
+    thresholds: ['< 0.5 Weit vom Top', '< 0.9 Sicher', '≥ 1.0 TOP-SIGNAL'],
+    score: scorePi,
+    format: v => fmt(v),
+    category: 'Zyklus',
+    historyKey: 'pi_cycle',
+  },
+  drawdown: {
+    title: 'Drawdown vom ATH',
+    desc: 'Wie weit vom Hoch entfernt',
+    info: '<strong>Drawdown vom All-Time-High</strong> – Einfachste Zyklus-Positionsanzeige. Über 70% Drawdown = historische Kapitulationszone. Nahe 0% = Markt am oder über ATH, Vorsicht bei Altcoin-Gewinnmitnahmen.',
+    thresholds: ['> 70% Kapitulation', '-20 bis -40% Normal', '< -5% Am ATH'],
+    score: scoreDD,
+    format: (v) => fmt(v, 1) + '%',
+    category: 'Zyklus',
+    historyKey: 'drawdown',
+  },
+  fear_greed: {
+    title: 'Fear & Greed',
+    desc: 'Markt-Sentiment',
+    info: '<strong>Fear & Greed Index</strong> aggregiert Volatilität, Momentum, Social Media und mehr zu einem Sentiment-Wert 0-100. Extreme (unter 25, über 75) sind historisch aussagekräftig. "Sei ängstlich wenn andere gierig sind" – Warren Buffett.',
+    thresholds: ['0-25 Extreme Angst', '45-55 Neutral', '75-100 Extreme Gier'],
+    score: scoreFG,
+    format: v => fmtInt(v),
+    category: 'Stimmung',
+    historyKey: 'fear_greed',
+  },
+  hashrate: {
+    title: 'Hashrate 30d',
+    desc: 'Netzwerkgesundheit (Bonus)',
+    info: '<strong>Hashrate-Trend</strong> zeigt die 30-Tage-Veränderung der gesamten Rechenleistung im Netzwerk. Steigend = Miner investieren, Netzwerk wächst. Fallend = Miner-Kapitulation, oft Nähe Zyklustief. Nicht im Aggregat-Score, nur als Bonus.',
+    thresholds: ['> 5% Wachstum', '0-5% Stabil', '< -10% Kapitulation'],
+    score: null,
+    format: v => fmt(v, 1) + '%',
+    category: 'Stimmung',
+    historyKey: 'hashrate',
+  },
+};
+
+// ============ SVG CHART ============
+function renderChart(history, level, format, tooltipId) {
+  if (!history || history.length < 2) return '<div style="color: var(--text-dim); font-size: 11px; padding: 20px; text-align: center;">Keine Historie verfügbar</div>';
+
+  const w = 600, h = 160, pad = { l: 8, r: 8, t: 8, b: 8 };
+  const values = history.map(p => p.v);
+  const times = history.map(p => p.t);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const tMin = Math.min(...times);
+  const tMax = Math.max(...times);
+  const tRange = tMax - tMin || 1;
+
+  const xFor = t => pad.l + ((t - tMin) / tRange) * (w - pad.l - pad.r);
+  const yFor = v => pad.t + (1 - (v - min) / range) * (h - pad.t - pad.b);
+
+  // Pfad erstellen
+  let d = '';
+  let area = '';
+  history.forEach((p, i) => {
+    const x = xFor(p.t), y = yFor(p.v);
+    d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    area += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+  area += `L${xFor(tMax).toFixed(1)},${(h - pad.b).toFixed(1)} L${xFor(tMin).toFixed(1)},${(h - pad.b).toFixed(1)} Z`;
+
+  const lastPoint = history[history.length - 1];
+
+  // Daten als JSON für JS-Interaktion
+  const dataJson = JSON.stringify(history).replace(/"/g, '&quot;');
+
   return `
-    <div class="metric-card bg-${level}">
-      <div class="metric-header">
-        <div>
-          <div class="metric-title">${title}</div>
-          <div class="metric-desc">${desc}</div>
-        </div>
-        <div class="dot dot-${level}"></div>
+    <div class="chart-wrap">
+      <div class="chart-tooltip" id="${tooltipId}">
+        <span class="t-val">${format(lastPoint.v)}</span>
+        <span class="t-date">${fmtDate(lastPoint.t)}</span>
       </div>
-      <div class="metric-value">
-        ${value != null ? value : '—'}${unit ? `<span class="metric-unit">${unit}</span>` : ''}
+      <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"
+           data-history="${dataJson}"
+           data-tooltip="${tooltipId}"
+           onmousemove="chartHover(event,this)"
+           ontouchmove="chartHover(event,this)"
+           onmouseleave="chartReset(this)">
+        <defs>
+          <linearGradient id="grad-${tooltipId}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="currentColor" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <g class="stroke-${level} fill-${level}" style="color: var(--${level});">
+          <path d="${area}" fill="url(#grad-${tooltipId})" stroke="none"/>
+          <path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <circle cx="${xFor(lastPoint.t)}" cy="${yFor(lastPoint.v)}" r="3" fill="currentColor"/>
+        </g>
+        <line id="cursor-${tooltipId}" x1="0" y1="0" x2="0" y2="${h}"
+              stroke="var(--text-muted)" stroke-width="0.5" stroke-dasharray="3,3"
+              style="opacity: 0;"/>
+        <circle id="dot-${tooltipId}" cx="0" cy="0" r="3.5"
+                fill="var(--${level})" stroke="var(--bg)" stroke-width="1.5"
+                style="opacity: 0;"/>
+      </svg>
+      <div class="chart-range">
+        <span>${fmtDate(tMin)}</span>
+        <span>${fmtDate(tMax)}</span>
       </div>
-      ${score ? `
-        <div class="metric-footer">
-          <span class="metric-label ${level}">${score.label}</span>
-          <span class="metric-score">Score ${score.score}</span>
+    </div>
+  `;
+}
+
+// Interaktion
+function chartHover(e, svg) {
+  e.preventDefault();
+  const history = JSON.parse(svg.getAttribute('data-history').replace(/&quot;/g, '"'));
+  const tooltipId = svg.getAttribute('data-tooltip');
+  const rect = svg.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const x = clientX - rect.left;
+  const ratio = Math.max(0, Math.min(1, x / rect.width));
+  const idx = Math.round(ratio * (history.length - 1));
+  const p = history[idx];
+  if (!p) return;
+
+  const w = 600, h = 160, pad = { l: 8, r: 8, t: 8, b: 8 };
+  const values = history.map(p => p.v);
+  const times = history.map(p => p.t);
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = max - min || 1;
+  const tMin = Math.min(...times), tMax = Math.max(...times);
+  const tRange = tMax - tMin || 1;
+  const xFor = t => pad.l + ((t - tMin) / tRange) * (w - pad.l - pad.r);
+  const yFor = v => pad.t + (1 - (v - min) / range) * (h - pad.t - pad.b);
+
+  const cx = xFor(p.t), cy = yFor(p.v);
+  const cursor = document.getElementById('cursor-' + tooltipId);
+  const dot = document.getElementById('dot-' + tooltipId);
+  if (cursor) { cursor.setAttribute('x1', cx); cursor.setAttribute('x2', cx); cursor.style.opacity = '0.5'; }
+  if (dot) { dot.setAttribute('cx', cx); dot.setAttribute('cy', cy); dot.style.opacity = '1'; }
+
+  const metricKey = svg.closest('.metric-card').getAttribute('data-key');
+  const format = METRICS[metricKey]?.format || (v => fmt(v));
+  const tooltip = document.getElementById(tooltipId);
+  if (tooltip) {
+    tooltip.innerHTML = `<span class="t-val">${format(p.v)}</span><span class="t-date">${fmtDate(p.t)}</span>`;
+  }
+}
+function chartReset(svg) {
+  const tooltipId = svg.getAttribute('data-tooltip');
+  const history = JSON.parse(svg.getAttribute('data-history').replace(/&quot;/g, '"'));
+  const last = history[history.length - 1];
+  const cursor = document.getElementById('cursor-' + tooltipId);
+  const dot = document.getElementById('dot-' + tooltipId);
+  if (cursor) cursor.style.opacity = '0';
+  if (dot) dot.style.opacity = '0';
+  const metricKey = svg.closest('.metric-card').getAttribute('data-key');
+  const format = METRICS[metricKey]?.format || (v => fmt(v));
+  const tooltip = document.getElementById(tooltipId);
+  if (tooltip && last) {
+    tooltip.innerHTML = `<span class="t-val">${format(last.v)}</span><span class="t-date">${fmtDate(last.t)}</span>`;
+  }
+}
+
+function toggleCard(key) {
+  expandedCard = expandedCard === key ? null : key;
+  render();
+}
+
+function renderCard(key, data, history) {
+  const m = METRICS[key];
+  const rawValue = data[key === 'drawdown'
+    ? null // special
+    : key === 'mayer' ? 'mayer_multiple'
+    : key === 'pi_cycle' ? 'pi_cycle_ratio'
+    : key === 'hashrate' ? 'hashrate_30d_change_pct'
+    : key];
+
+  let value;
+  if (key === 'drawdown') {
+    value = (data.price_chf && data.ath_chf) ? ((data.price_chf - data.ath_chf) / data.ath_chf) * 100 : null;
+  } else {
+    value = rawValue;
+  }
+
+  const score = m.score ? m.score(value) : null;
+  const level = score?.level || 'gray';
+  const isExpanded = expandedCard === key;
+  const hist = history?.[m.historyKey || key];
+  const tooltipId = 'tt-' + key;
+
+  return `
+    <div class="metric-card bg-${level} ${isExpanded ? 'expanded' : ''}" data-key="${key}">
+      <div class="metric-head" onclick="toggleCard('${key}')">
+        <div class="metric-main">
+          <div class="metric-title-row">${m.title}</div>
+          <div class="metric-desc">${m.desc}</div>
+          <div class="metric-value-row">
+            <div class="metric-value">${value != null ? m.format(value) : '—'}</div>
+            ${score ? `<div class="metric-label ${level}">${score.label}</div>` : ''}
+          </div>
         </div>
-      ` : ''}
-      ${extra ? `<div class="metric-extra">${extra}</div>` : ''}
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div class="dot dot-${level}"></div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="metric-body">
+        <div class="metric-body-inner">
+          <div class="metric-info">${m.info}</div>
+          <div class="metric-thresholds">
+            ${m.thresholds.map(t => `<span class="threshold">${t}</span>`).join('')}
+          </div>
+          ${isExpanded ? renderChart(hist, level, m.format, tooltipId) : ''}
+        </div>
+      </div>
     </div>
   `;
 }
@@ -307,30 +554,29 @@ function card(title, desc, value, unit, score, extra) {
 function render() {
   const app = document.getElementById('app');
   const d = lastData?.data || {};
+  const h = lastData?.history || {};
 
   const drawdownPct = (d.price_chf && d.ath_chf)
     ? ((d.price_chf - d.ath_chf) / d.ath_chf) * 100 : null;
 
-  // Scores
-  const mayerS = scoreMayer(d.mayer_multiple);
-  const mvrvS = scoreMvrvZ(d.mvrv_z);
-  const piS = scorePi(d.pi_cycle_ratio);
-  const nuplS = scoreNupl(d.nupl);
-  const soprS = scoreSopr(d.sopr);
-  const supS = scoreSupplyProfit(d.supply_in_profit_pct);
-  const fgS = scoreFG(d.fear_greed);
-  const ddS = scoreDD(drawdownPct);
-
-  // Kategorie-Scores
-  const bewertungScore = catAvg([mayerS, mvrvS]);
-  const holderScore = catAvg([nuplS, soprS, supS]);
-  const zyklusScore = catAvg([piS, ddS]);
-  const stimmungScore = catAvg([fgS]);
-
   // Aggregat
-  const allScores = [mayerS, mvrvS, piS, nuplS, soprS, supS, fgS, ddS].filter(Boolean);
+  const allScores = [
+    scoreMvrvZ(d.mvrv_z),
+    scoreMayer(d.mayer_multiple),
+    scoreNupl(d.nupl),
+    scoreSopr(d.sopr),
+    scoreSupply(d.supply_in_profit_pct),
+    scorePi(d.pi_cycle_ratio),
+    scoreDD(drawdownPct),
+    scoreFG(d.fear_greed),
+  ].filter(Boolean);
   const agg = allScores.length ? Math.round(allScores.reduce((a, s) => a + s.score, 0) / allScores.length) : null;
   const aggInfo = aggregateLevel(agg);
+
+  const bewertungScore = catAvg([scoreMvrvZ(d.mvrv_z), scoreMayer(d.mayer_multiple)]);
+  const holderScore = catAvg([scoreNupl(d.nupl), scoreSopr(d.sopr), scoreSupply(d.supply_in_profit_pct)]);
+  const zyklusScore = catAvg([scorePi(d.pi_cycle_ratio), scoreDD(drawdownPct)]);
+  const stimmungScore = catAvg([scoreFG(d.fear_greed)]);
 
   const timestamp = lastData?.timestamp ? new Date(lastData.timestamp).toLocaleString('de-CH') : '';
 
@@ -338,7 +584,7 @@ function render() {
     <div class="header">
       <div class="title">
         <div class="btc-icon">₿</div>
-        <div>BTC On-Chain Dashboard</div>
+        <div>On-Chain Dashboard</div>
       </div>
       <button class="refresh-btn ${isLoading ? 'refreshing' : ''}" onclick="fetchData()" ${isLoading ? 'disabled' : ''}>
         <span class="refresh-icon">↻</span>
@@ -365,7 +611,7 @@ function render() {
         <div class="aggregate-status ${aggInfo.level}">${aggInfo.icon} ${aggInfo.label}</div>
       </div>
       <div class="circle-wrap">
-        <svg viewBox="0 0 100 100" width="88" height="88">
+        <svg viewBox="0 0 100 100" width="84" height="84">
           <circle class="circle-bg" cx="50" cy="50" r="42"/>
           <circle class="circle-fill ${aggInfo.level}"
                   stroke="currentColor" cx="50" cy="50" r="42"
@@ -374,68 +620,55 @@ function render() {
       </div>
     </div>
 
-    <!-- BEWERTUNG -->
     <div class="category">
       <div class="category-header">
         <span class="category-title">🔍 Bewertung</span>
         ${bewertungScore != null ? `<span class="category-score">Ø ${bewertungScore}</span>` : ''}
       </div>
       <div class="grid">
-        ${card('MVRV Z-Score', 'Markt- vs Realized Cap', fmt(d.mvrv_z), null, mvrvS, '<0 Boden · >7 Top-Zone')}
-        ${card('Mayer Multiple', 'Preis / 200-Tage MA', fmt(d.mayer_multiple), null, mayerS, '<1.0 günstig · >2.4 Top')}
+        ${renderCard('mvrv_z', d, h)}
+        ${renderCard('mayer', d, h)}
       </div>
     </div>
 
-    <!-- HOLDER-VERHALTEN -->
     <div class="category">
       <div class="category-header">
         <span class="category-title">👥 Holder-Verhalten</span>
         ${holderScore != null ? `<span class="category-score">Ø ${holderScore}</span>` : ''}
       </div>
-      <div class="grid grid-3">
-        ${card('NUPL', 'Unrealisierte Gewinne', fmt(d.nupl), null, nuplS, 'Capitulation → Euphoria')}
-        ${card('SOPR', 'Spent Output Profit Ratio', fmt(d.sopr, 3), null, soprS, '<1 Verluste · >1 Gewinne')}
-        ${card('Supply in Profit', 'Anteil Coins im Gewinn', d.supply_in_profit_pct != null ? fmt(d.supply_in_profit_pct * 100, 1) : null, '%', supS, '<50% Boden · >95% Top')}
+      <div class="grid">
+        ${renderCard('nupl', d, h)}
+        ${renderCard('sopr', d, h)}
+        ${renderCard('supply_in_profit_pct', d, h)}
       </div>
     </div>
 
-    <!-- ZYKLUS -->
     <div class="category">
       <div class="category-header">
         <span class="category-title">📊 Zyklus-Position</span>
         ${zyklusScore != null ? `<span class="category-score">Ø ${zyklusScore}</span>` : ''}
       </div>
       <div class="grid">
-        ${card('Pi Cycle Top', '111DMA / (350DMA × 2)', fmt(d.pi_cycle_ratio), null, piS, 'Signal bei Wert ≥ 1.00')}
-        ${card('Drawdown vom ATH', 'Wie weit vom Hoch', drawdownPct != null ? drawdownPct.toFixed(1) : '—', '%', ddS, d.ath_chf ? `ATH: ${fmtInt(d.ath_chf)} CHF` : '')}
+        ${renderCard('pi_cycle', d, h)}
+        ${renderCard('drawdown', d, h)}
       </div>
     </div>
 
-    <!-- STIMMUNG -->
     <div class="category">
       <div class="category-header">
         <span class="category-title">💭 Stimmung</span>
         ${stimmungScore != null ? `<span class="category-score">Ø ${stimmungScore}</span>` : ''}
       </div>
       <div class="grid">
-        ${card('Fear & Greed', 'Markt-Sentiment', d.fear_greed ?? '—', '/ 100', fgS, d.fear_greed_label || '')}
-        ${d.hashrate_30d_change_pct != null ? card('Hashrate 30d', 'Netzwerkgesundheit (Bonus)', d.hashrate_30d_change_pct.toFixed(1), '%', null, d.hashrate_ehs ? `${fmtInt(d.hashrate_ehs)} EH/s` : '') : ''}
+        ${renderCard('fear_greed', d, h)}
+        ${renderCard('hashrate', d, h)}
       </div>
     </div>
 
-    <button class="info-toggle" onclick="showInfo = !showInfo; render()">
-      ℹ️ ${showInfo ? 'Methodik ausblenden' : 'Methodik & Quellen'}
-    </button>
-
-    ${showInfo ? `
-      <div class="info-box">
-        <div><strong>Scoring:</strong> Jede Metrik → 0–100. Aggregat = Durchschnitt aus 8 Metriken. Über 75 = Akkumulation · 55–75 = günstig · 40–55 = neutral · 25–40 = Vorsicht · unter 25 = Distribution.</div>
-        <div><strong>Kategorien:</strong> Bewertung (2), Holder-Verhalten (3), Zyklus (2), Stimmung (1). Hashrate ist Bonus-Info (nicht im Score).</div>
-        <div><strong>Quellen:</strong> Bitcoin Lab v2 API (MVRV Z, NUPL, SOPR, Supply in Profit), Kraken (Preis, Historie), alternative.me (Fear & Greed), mempool.space (Hashrate), Frankfurter (USD→CHF).</div>
-        <div><strong>Architektur:</strong> Dashboard → Cloudflare Worker → externe APIs. Token sicher als verschlüsseltes Secret.</div>
-        <div style="padding-top: 8px; border-top: 1px solid #1e293b; margin-top: 8px;">Kein Trading-Signal. Makro-Orientierung für Holder.</div>
-      </div>
-    ` : ''}
+    <div style="text-align:center; font-size: 10px; color: var(--text-dim); margin-top: 24px; padding: 16px;">
+      Tippen zum Aufklappen · Chart wischen für Werte<br>
+      Quellen: Kraken · Bitcoin Lab · alternative.me · mempool.space
+    </div>
   `;
 }
 
