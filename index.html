@@ -30,11 +30,7 @@
       -webkit-font-smoothing: antialiased;
     }
     .container { max-width: 900px; margin: 0 auto; }
-
-    .header {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-bottom: 16px;
-    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .title { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; }
     .btc-icon {
       width: 28px; height: 28px; background: var(--btc); border-radius: 50%;
@@ -51,135 +47,57 @@
     .refresh-btn:disabled { opacity: 0.5; }
     .refreshing .refresh-icon { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-    .price-row {
-      display: flex; justify-content: space-between;
-      align-items: baseline; margin-bottom: 16px; font-size: 14px;
-    }
+    .price-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; font-size: 14px; }
     .price { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .price-change { margin-left: 8px; color: var(--text-muted); font-size: 13px; }
     .timestamp { font-size: 11px; color: var(--text-dim); }
-
     .aggregate {
       border-radius: 16px; padding: 20px; margin-bottom: 24px;
       display: flex; justify-content: space-between; align-items: center;
       border: 1px solid; background: var(--bg-card);
     }
-    .aggregate-label {
-      font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--text-muted); margin-bottom: 6px;
-    }
+    .aggregate-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 6px; }
     .aggregate-score { font-size: 42px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
     .aggregate-score-unit { font-size: 13px; color: var(--text-muted); margin-left: 4px; }
     .aggregate-status { margin-top: 10px; font-weight: 600; font-size: 15px; }
     .circle-wrap { position: relative; width: 84px; height: 84px; }
     .circle-bg, .circle-fill { fill: none; stroke-width: 7; }
     .circle-bg { stroke: var(--border); }
-    .circle-fill {
-      stroke-linecap: round;
-      transform: rotate(-90deg); transform-origin: center;
-      transition: stroke-dasharray 0.8s;
-    }
-
+    .circle-fill { stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; transition: stroke-dasharray 0.8s; }
     .category { margin-bottom: 16px; }
-    .category-header {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 8px; padding: 0 4px;
-    }
-    .category-title {
-      font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--text-muted); font-weight: 600;
-    }
-    .category-score {
-      font-size: 11px; font-variant-numeric: tabular-nums; color: var(--text-dim);
-    }
-
+    .category-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; padding: 0 4px; }
+    .category-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 600; }
+    .category-score { font-size: 11px; font-variant-numeric: tabular-nums; color: var(--text-dim); }
     .grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
     @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }
-
-    .metric-card {
-      border-radius: 14px; border: 1px solid;
-      overflow: hidden; transition: border-color 0.2s;
-    }
+    .metric-card { border-radius: 14px; border: 1px solid; overflow: hidden; transition: border-color 0.2s; }
     .metric-card.expanded { grid-column: 1 / -1; }
-    .metric-head {
-      padding: 14px 16px; cursor: pointer;
-      display: flex; justify-content: space-between;
-      align-items: flex-start; gap: 12px;
-    }
+    .metric-head { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
     .metric-head:active { opacity: 0.8; }
     .metric-main { flex: 1; min-width: 0; }
-    .metric-title-row {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--text-muted); margin-bottom: 2px;
-    }
+    .metric-title-row { display: flex; align-items: center; gap: 6px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 2px; }
     .metric-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
-    .metric-value-row {
-      display: flex; align-items: baseline; justify-content: space-between;
-      gap: 12px; flex-wrap: wrap;
-    }
-    .metric-value {
-      font-size: 22px; font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
+    .metric-value-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .metric-value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .metric-unit { font-size: 12px; color: var(--text-muted); margin-left: 3px; }
     .metric-label { font-size: 11px; font-weight: 500; }
-    .dot {
-      width: 9px; height: 9px; border-radius: 50%;
-      flex-shrink: 0; margin-top: 4px;
-    }
-    .chevron {
-      color: var(--text-dim); font-size: 10px;
-      transition: transform 0.2s;
-      margin-top: 3px;
-    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .chevron { color: var(--text-dim); font-size: 10px; transition: transform 0.2s; margin-top: 3px; }
     .metric-card.expanded .chevron { transform: rotate(180deg); }
-
-    .metric-body {
-      max-height: 0; overflow: hidden;
-      transition: max-height 0.3s ease;
-      border-top: 1px solid transparent;
-    }
-    .metric-card.expanded .metric-body {
-      max-height: 500px;
-      border-top-color: var(--border);
-    }
+    .metric-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px solid transparent; }
+    .metric-card.expanded .metric-body { max-height: 500px; border-top-color: var(--border); }
     .metric-body-inner { padding: 14px 16px; }
-    .metric-info {
-      font-size: 12px; line-height: 1.55; color: var(--text-muted);
-      margin-bottom: 14px;
-    }
+    .metric-info { font-size: 12px; line-height: 1.55; color: var(--text-muted); margin-bottom: 14px; }
     .metric-info strong { color: var(--text); }
-    .metric-thresholds {
-      display: flex; gap: 6px; flex-wrap: wrap;
-      margin-bottom: 14px; font-size: 10px;
-    }
-    .threshold {
-      padding: 3px 8px; border-radius: 6px;
-      background: rgba(30, 42, 68, 0.5);
-      color: var(--text-muted);
-    }
-
-    .chart-wrap {
-      position: relative; margin-top: 4px;
-      background: rgba(10, 14, 26, 0.5);
-      border-radius: 8px; padding: 8px 4px 4px;
-    }
+    .metric-thresholds { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; font-size: 10px; }
+    .threshold { padding: 3px 8px; border-radius: 6px; background: rgba(30, 42, 68, 0.5); color: var(--text-muted); }
+    .chart-wrap { position: relative; margin-top: 4px; background: rgba(10, 14, 26, 0.5); border-radius: 8px; padding: 8px 4px 4px; }
     .chart-wrap svg { width: 100%; height: 160px; display: block; }
-    .chart-tooltip {
-      position: absolute; top: 8px; left: 12px;
-      font-size: 11px; color: var(--text); pointer-events: none;
-      font-variant-numeric: tabular-nums;
-    }
+    .chart-tooltip { position: absolute; top: 8px; left: 12px; font-size: 11px; color: var(--text); pointer-events: none; font-variant-numeric: tabular-nums; }
     .chart-tooltip .t-val { font-weight: 600; }
     .chart-tooltip .t-date { color: var(--text-dim); margin-left: 6px; font-size: 10px; }
-    .chart-range {
-      display: flex; justify-content: space-between;
-      font-size: 9px; color: var(--text-dim);
-      padding: 4px 4px 0;
-    }
-
+    .chart-range { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-dim); padding: 4px 4px 0; }
+    .no-history { color: var(--text-dim); font-size: 11px; padding: 20px; text-align: center; background: rgba(10, 14, 26, 0.5); border-radius: 8px; }
     .green  { color: var(--green); }
     .yellow { color: var(--yellow); }
     .orange { color: var(--orange); }
@@ -199,18 +117,7 @@
     .stroke-orange { stroke: var(--orange); }
     .stroke-red    { stroke: var(--red); }
     .stroke-gray   { stroke: var(--text-dim); }
-    .fill-green  { fill: var(--green); }
-    .fill-yellow { fill: var(--yellow); }
-    .fill-orange { fill: var(--orange); }
-    .fill-red    { fill: var(--red); }
-    .fill-gray   { fill: var(--text-dim); }
-
-    .error-box {
-      border: 1px solid rgba(248, 113, 113, 0.3);
-      background: rgba(248, 113, 113, 0.05);
-      padding: 12px; border-radius: 10px; margin-bottom: 16px;
-      font-size: 12px; color: #fca5a5;
-    }
+    .error-box { border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.05); padding: 12px; border-radius: 10px; margin-bottom: 16px; font-size: 12px; color: #fca5a5; }
     .loading { text-align: center; padding: 40px; color: var(--text-muted); }
   </style>
 </head>
@@ -225,14 +132,13 @@ const WORKER_URL = "https://btc-dashboard.y68xps2sdk.workers.dev";
 let lastData = null;
 let lastError = null;
 let isLoading = false;
-let expandedCard = null;  // key of expanded metric
+let expandedCard = null;
 
 async function fetchData() {
   if (isLoading) return;
   isLoading = true;
   lastError = null;
   render();
-
   try {
     const r = await fetch(WORKER_URL);
     if (!r.ok) throw new Error("HTTP " + r.status);
@@ -240,20 +146,20 @@ async function fetchData() {
   } catch (e) {
     lastError = e.message;
   }
-
   isLoading = false;
   render();
 }
 
 // ============ SCORING ============
-function scoreMayer(v)   { if(v==null)return null; if(v<1.0)return{score:95,level:'green',label:'Unterbewertet'}; if(v<1.5)return{score:75,level:'green',label:'Günstig'}; if(v<2.0)return{score:50,level:'yellow',label:'Neutral'}; if(v<2.4)return{score:25,level:'orange',label:'Erhöht'}; return{score:5,level:'red',label:'Top-Zone'}; }
-function scoreMvrvZ(v)   { if(v==null)return null; if(v<0)return{score:95,level:'green',label:'Historischer Boden'}; if(v<2)return{score:75,level:'green',label:'Unterbewertet'}; if(v<4)return{score:50,level:'yellow',label:'Neutral'}; if(v<6)return{score:25,level:'orange',label:'Erhitzt'}; return{score:5,level:'red',label:'Top-Zone'}; }
-function scorePi(v)      { if(v==null)return null; if(v<0.5)return{score:90,level:'green',label:'Weit vom Top'}; if(v<0.75)return{score:65,level:'green',label:'Sicher'}; if(v<0.9)return{score:40,level:'yellow',label:'Achtung'}; if(v<1.0)return{score:15,level:'orange',label:'Nahe Signal'}; return{score:0,level:'red',label:'TOP SIGNAL'}; }
-function scoreNupl(v)    { if(v==null)return null; if(v<0)return{score:95,level:'green',label:'Capitulation'}; if(v<0.25)return{score:75,level:'green',label:'Hope/Fear'}; if(v<0.5)return{score:55,level:'yellow',label:'Optimism'}; if(v<0.75)return{score:25,level:'orange',label:'Belief'}; return{score:5,level:'red',label:'Euphoria'}; }
-function scoreSopr(v)    { if(v==null)return null; if(v<0.97)return{score:90,level:'green',label:'Kapitulation'}; if(v<1.0)return{score:70,level:'green',label:'Verlust-Realisierung'}; if(v<1.03)return{score:45,level:'yellow',label:'Übergang'}; if(v<1.05)return{score:30,level:'orange',label:'Gewinnmitnahme'}; return{score:10,level:'red',label:'Starke Gewinne'}; }
-function scoreSupply(p)  { if(p==null)return null; if(p<0.5)return{score:90,level:'green',label:'Bärenmarkt-Boden'}; if(p<0.7)return{score:70,level:'green',label:'Unterbewertet'}; if(p<0.85)return{score:50,level:'yellow',label:'Normal'}; if(p<0.95)return{score:25,level:'orange',label:'Erhitzt'}; return{score:5,level:'red',label:'Euphorie'}; }
-function scoreFG(v)      { if(v==null)return null; if(v<25)return{score:90,level:'green',label:'Extreme Angst'}; if(v<45)return{score:65,level:'green',label:'Angst'}; if(v<55)return{score:50,level:'yellow',label:'Neutral'}; if(v<75)return{score:25,level:'orange',label:'Gier'}; return{score:5,level:'red',label:'Extreme Gier'}; }
-function scoreDD(pct)    { if(pct==null)return null; const dd=Math.abs(pct); if(dd>70)return{score:95,level:'green',label:'Kapitulationszone'}; if(dd>40)return{score:75,level:'green',label:'Starker Abschlag'}; if(dd>20)return{score:55,level:'yellow',label:'Moderat'}; if(dd>5)return{score:35,level:'yellow',label:'Nahe ATH'}; return{score:15,level:'orange',label:'Am/über ATH'}; }
+function scoreMayer(v)      { if(v==null)return null; if(v<1.0)return{score:95,level:'green',label:'Unterbewertet'}; if(v<1.5)return{score:75,level:'green',label:'Günstig'}; if(v<2.0)return{score:50,level:'yellow',label:'Neutral'}; if(v<2.4)return{score:25,level:'orange',label:'Erhöht'}; return{score:5,level:'red',label:'Top-Zone'}; }
+function scoreMvrvZ(v)      { if(v==null)return null; if(v<0)return{score:95,level:'green',label:'Historischer Boden'}; if(v<2)return{score:75,level:'green',label:'Unterbewertet'}; if(v<4)return{score:50,level:'yellow',label:'Neutral'}; if(v<6)return{score:25,level:'orange',label:'Erhitzt'}; return{score:5,level:'red',label:'Top-Zone'}; }
+function scoreMvrvRatio(v)  { if(v==null)return null; if(v<1.0)return{score:95,level:'green',label:'Unter Realized'}; if(v<1.5)return{score:75,level:'green',label:'Günstig'}; if(v<2.5)return{score:50,level:'yellow',label:'Normal'}; if(v<3.5)return{score:25,level:'orange',label:'Erhitzt'}; return{score:5,level:'red',label:'Top-Zone'}; }
+function scorePi(v)         { if(v==null)return null; if(v<0.5)return{score:90,level:'green',label:'Weit vom Top'}; if(v<0.75)return{score:65,level:'green',label:'Sicher'}; if(v<0.9)return{score:40,level:'yellow',label:'Achtung'}; if(v<1.0)return{score:15,level:'orange',label:'Nahe Signal'}; return{score:0,level:'red',label:'TOP SIGNAL'}; }
+function scoreNupl(v)       { if(v==null)return null; if(v<0)return{score:95,level:'green',label:'Capitulation'}; if(v<0.25)return{score:75,level:'green',label:'Hope/Fear'}; if(v<0.5)return{score:55,level:'yellow',label:'Optimism'}; if(v<0.75)return{score:25,level:'orange',label:'Belief'}; return{score:5,level:'red',label:'Euphoria'}; }
+function scoreSopr(v)       { if(v==null)return null; if(v<0.97)return{score:90,level:'green',label:'Kapitulation'}; if(v<1.0)return{score:70,level:'green',label:'Verlust-Realisierung'}; if(v<1.03)return{score:45,level:'yellow',label:'Übergang'}; if(v<1.05)return{score:30,level:'orange',label:'Gewinnmitnahme'}; return{score:10,level:'red',label:'Starke Gewinne'}; }
+function scoreSupply(p)     { if(p==null)return null; if(p<0.5)return{score:90,level:'green',label:'Bärenmarkt-Boden'}; if(p<0.7)return{score:70,level:'green',label:'Unterbewertet'}; if(p<0.85)return{score:50,level:'yellow',label:'Normal'}; if(p<0.95)return{score:25,level:'orange',label:'Erhitzt'}; return{score:5,level:'red',label:'Euphorie'}; }
+function scoreFG(v)         { if(v==null)return null; if(v<25)return{score:90,level:'green',label:'Extreme Angst'}; if(v<45)return{score:65,level:'green',label:'Angst'}; if(v<55)return{score:50,level:'yellow',label:'Neutral'}; if(v<75)return{score:25,level:'orange',label:'Gier'}; return{score:5,level:'red',label:'Extreme Gier'}; }
+function scoreDD(pct)       { if(pct==null)return null; const dd=Math.abs(pct); if(dd>70)return{score:95,level:'green',label:'Kapitulationszone'}; if(dd>40)return{score:75,level:'green',label:'Starker Abschlag'}; if(dd>20)return{score:55,level:'yellow',label:'Moderat'}; if(dd>5)return{score:35,level:'yellow',label:'Nahe ATH'}; return{score:15,level:'orange',label:'Am/über ATH'}; }
 
 function aggregateLevel(score) {
   if (score == null) return { level: 'gray',   label: 'Lade…',        icon: '⋯' };
@@ -292,7 +198,18 @@ const METRICS = {
     thresholds: ['< 0 Boden', '0-4 Normal', '4-6 Erhitzt', '> 6 Top-Zone'],
     score: scoreMvrvZ,
     format: v => fmt(v),
-    category: 'Bewertung',
+    dataKey: 'mvrv_z',
+    historyKey: 'mvrv_z',
+  },
+  mvrv_ratio: {
+    title: 'MVRV Ratio',
+    desc: 'Preis / Realized Price',
+    info: '<strong>MVRV Ratio</strong> ist der aktuelle BTC-Preis geteilt durch den durchschnittlichen "Einstandspreis" aller BTC (Realized Price). Zeigt direkt: sind wir über oder unter dem kollektiven Break-Even der Halter? Unter 1.0 = alle Coins durchschnittlich im Verlust, historische Kapitulationszone.',
+    thresholds: ['< 1.0 Unter Einstand', '1.0-1.5 Günstig', '1.5-2.5 Normal', '> 3.7 Top-Zone'],
+    score: scoreMvrvRatio,
+    format: v => fmt(v),
+    dataKey: 'mvrv_ratio',
+    historyKey: 'mvrv_ratio',
   },
   mayer: {
     title: 'Mayer Multiple',
@@ -301,7 +218,7 @@ const METRICS = {
     thresholds: ['< 1.0 Günstig', '1.5-2.0 Neutral', '> 2.4 Top-Zone'],
     score: scoreMayer,
     format: v => fmt(v),
-    category: 'Bewertung',
+    dataKey: 'mayer_multiple',
     historyKey: 'mayer',
   },
   nupl: {
@@ -311,7 +228,8 @@ const METRICS = {
     thresholds: ['< 0 Capitulation', '0.25-0.5 Optimism', '> 0.75 Euphoria'],
     score: scoreNupl,
     format: v => fmt(v),
-    category: 'Holder',
+    dataKey: 'nupl',
+    historyKey: 'nupl',
   },
   sopr: {
     title: 'SOPR',
@@ -320,7 +238,8 @@ const METRICS = {
     thresholds: ['< 1.0 Verluste', '1.0-1.05 Normal', '> 1.05 Gewinne'],
     score: scoreSopr,
     format: v => fmt(v, 3),
-    category: 'Holder',
+    dataKey: 'sopr',
+    historyKey: 'sopr',
   },
   supply_in_profit_pct: {
     title: 'Supply in Profit',
@@ -329,7 +248,8 @@ const METRICS = {
     thresholds: ['< 50% Boden', '70-85% Normal', '> 95% Euphorie'],
     score: scoreSupply,
     format: v => fmt(v * 100, 1) + '%',
-    category: 'Holder',
+    dataKey: 'supply_in_profit_pct',
+    historyKey: 'supply_in_profit_pct',
   },
   pi_cycle: {
     title: 'Pi Cycle Top',
@@ -338,7 +258,7 @@ const METRICS = {
     thresholds: ['< 0.5 Weit vom Top', '< 0.9 Sicher', '≥ 1.0 TOP-SIGNAL'],
     score: scorePi,
     format: v => fmt(v),
-    category: 'Zyklus',
+    dataKey: 'pi_cycle_ratio',
     historyKey: 'pi_cycle',
   },
   drawdown: {
@@ -348,7 +268,7 @@ const METRICS = {
     thresholds: ['> 70% Kapitulation', '-20 bis -40% Normal', '< -5% Am ATH'],
     score: scoreDD,
     format: (v) => fmt(v, 1) + '%',
-    category: 'Zyklus',
+    dataKey: null,
     historyKey: 'drawdown',
   },
   fear_greed: {
@@ -358,7 +278,7 @@ const METRICS = {
     thresholds: ['0-25 Extreme Angst', '45-55 Neutral', '75-100 Extreme Gier'],
     score: scoreFG,
     format: v => fmtInt(v),
-    category: 'Stimmung',
+    dataKey: 'fear_greed',
     historyKey: 'fear_greed',
   },
   hashrate: {
@@ -368,15 +288,16 @@ const METRICS = {
     thresholds: ['> 5% Wachstum', '0-5% Stabil', '< -10% Kapitulation'],
     score: null,
     format: v => fmt(v, 1) + '%',
-    category: 'Stimmung',
+    dataKey: 'hashrate_30d_change_pct',
     historyKey: 'hashrate',
   },
 };
 
 // ============ SVG CHART ============
 function renderChart(history, level, format, tooltipId) {
-  if (!history || history.length < 2) return '<div style="color: var(--text-dim); font-size: 11px; padding: 20px; text-align: center;">Keine Historie verfügbar</div>';
-
+  if (!history || history.length < 2) {
+    return '<div class="no-history">Historie wird aufgebaut (' + (history?.length || 0) + ' Punkt' + ((history?.length || 0) === 1 ? '' : 'e') + ') – wächst bei jedem Refresh</div>';
+  }
   const w = 600, h = 160, pad = { l: 8, r: 8, t: 8, b: 8 };
   const values = history.map(p => p.v);
   const times = history.map(p => p.t);
@@ -386,25 +307,17 @@ function renderChart(history, level, format, tooltipId) {
   const tMin = Math.min(...times);
   const tMax = Math.max(...times);
   const tRange = tMax - tMin || 1;
-
   const xFor = t => pad.l + ((t - tMin) / tRange) * (w - pad.l - pad.r);
   const yFor = v => pad.t + (1 - (v - min) / range) * (h - pad.t - pad.b);
-
-  // Pfad erstellen
-  let d = '';
-  let area = '';
+  let d = '', area = '';
   history.forEach((p, i) => {
     const x = xFor(p.t), y = yFor(p.v);
     d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
     area += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
   });
   area += `L${xFor(tMax).toFixed(1)},${(h - pad.b).toFixed(1)} L${xFor(tMin).toFixed(1)},${(h - pad.b).toFixed(1)} Z`;
-
   const lastPoint = history[history.length - 1];
-
-  // Daten als JSON für JS-Interaktion
   const dataJson = JSON.stringify(history).replace(/"/g, '&quot;');
-
   return `
     <div class="chart-wrap">
       <div class="chart-tooltip" id="${tooltipId}">
@@ -423,7 +336,7 @@ function renderChart(history, level, format, tooltipId) {
             <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
           </linearGradient>
         </defs>
-        <g class="stroke-${level} fill-${level}" style="color: var(--${level});">
+        <g class="stroke-${level}" style="color: var(--${level});">
           <path d="${area}" fill="url(#grad-${tooltipId})" stroke="none"/>
           <path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
           <circle cx="${xFor(lastPoint.t)}" cy="${yFor(lastPoint.v)}" r="3" fill="currentColor"/>
@@ -443,7 +356,6 @@ function renderChart(history, level, format, tooltipId) {
   `;
 }
 
-// Interaktion
 function chartHover(e, svg) {
   e.preventDefault();
   const history = JSON.parse(svg.getAttribute('data-history').replace(/&quot;/g, '"'));
@@ -455,7 +367,6 @@ function chartHover(e, svg) {
   const idx = Math.round(ratio * (history.length - 1));
   const p = history[idx];
   if (!p) return;
-
   const w = 600, h = 160, pad = { l: 8, r: 8, t: 8, b: 8 };
   const values = history.map(p => p.v);
   const times = history.map(p => p.t);
@@ -465,19 +376,15 @@ function chartHover(e, svg) {
   const tRange = tMax - tMin || 1;
   const xFor = t => pad.l + ((t - tMin) / tRange) * (w - pad.l - pad.r);
   const yFor = v => pad.t + (1 - (v - min) / range) * (h - pad.t - pad.b);
-
   const cx = xFor(p.t), cy = yFor(p.v);
   const cursor = document.getElementById('cursor-' + tooltipId);
   const dot = document.getElementById('dot-' + tooltipId);
   if (cursor) { cursor.setAttribute('x1', cx); cursor.setAttribute('x2', cx); cursor.style.opacity = '0.5'; }
   if (dot) { dot.setAttribute('cx', cx); dot.setAttribute('cy', cy); dot.style.opacity = '1'; }
-
   const metricKey = svg.closest('.metric-card').getAttribute('data-key');
   const format = METRICS[metricKey]?.format || (v => fmt(v));
   const tooltip = document.getElementById(tooltipId);
-  if (tooltip) {
-    tooltip.innerHTML = `<span class="t-val">${format(p.v)}</span><span class="t-date">${fmtDate(p.t)}</span>`;
-  }
+  if (tooltip) tooltip.innerHTML = `<span class="t-val">${format(p.v)}</span><span class="t-date">${fmtDate(p.t)}</span>`;
 }
 function chartReset(svg) {
   const tooltipId = svg.getAttribute('data-tooltip');
@@ -490,9 +397,7 @@ function chartReset(svg) {
   const metricKey = svg.closest('.metric-card').getAttribute('data-key');
   const format = METRICS[metricKey]?.format || (v => fmt(v));
   const tooltip = document.getElementById(tooltipId);
-  if (tooltip && last) {
-    tooltip.innerHTML = `<span class="t-val">${format(last.v)}</span><span class="t-date">${fmtDate(last.t)}</span>`;
-  }
+  if (tooltip && last) tooltip.innerHTML = `<span class="t-val">${format(last.v)}</span><span class="t-date">${fmtDate(last.t)}</span>`;
 }
 
 function toggleCard(key) {
@@ -502,26 +407,17 @@ function toggleCard(key) {
 
 function renderCard(key, data, history) {
   const m = METRICS[key];
-  const rawValue = data[key === 'drawdown'
-    ? null // special
-    : key === 'mayer' ? 'mayer_multiple'
-    : key === 'pi_cycle' ? 'pi_cycle_ratio'
-    : key === 'hashrate' ? 'hashrate_30d_change_pct'
-    : key];
-
   let value;
   if (key === 'drawdown') {
     value = (data.price_chf && data.ath_chf) ? ((data.price_chf - data.ath_chf) / data.ath_chf) * 100 : null;
   } else {
-    value = rawValue;
+    value = data[m.dataKey];
   }
-
   const score = m.score ? m.score(value) : null;
   const level = score?.level || 'gray';
   const isExpanded = expandedCard === key;
-  const hist = history?.[m.historyKey || key];
+  const hist = history?.[m.historyKey];
   const tooltipId = 'tt-' + key;
-
   return `
     <div class="metric-card bg-${level} ${isExpanded ? 'expanded' : ''}" data-key="${key}">
       <div class="metric-head" onclick="toggleCard('${key}')">
@@ -541,9 +437,7 @@ function renderCard(key, data, history) {
       <div class="metric-body">
         <div class="metric-body-inner">
           <div class="metric-info">${m.info}</div>
-          <div class="metric-thresholds">
-            ${m.thresholds.map(t => `<span class="threshold">${t}</span>`).join('')}
-          </div>
+          <div class="metric-thresholds">${m.thresholds.map(t => `<span class="threshold">${t}</span>`).join('')}</div>
           ${isExpanded ? renderChart(hist, level, m.format, tooltipId) : ''}
         </div>
       </div>
@@ -555,13 +449,11 @@ function render() {
   const app = document.getElementById('app');
   const d = lastData?.data || {};
   const h = lastData?.history || {};
+  const drawdownPct = (d.price_chf && d.ath_chf) ? ((d.price_chf - d.ath_chf) / d.ath_chf) * 100 : null;
 
-  const drawdownPct = (d.price_chf && d.ath_chf)
-    ? ((d.price_chf - d.ath_chf) / d.ath_chf) * 100 : null;
-
-  // Aggregat
   const allScores = [
     scoreMvrvZ(d.mvrv_z),
+    scoreMvrvRatio(d.mvrv_ratio),
     scoreMayer(d.mayer_multiple),
     scoreNupl(d.nupl),
     scoreSopr(d.sopr),
@@ -573,7 +465,7 @@ function render() {
   const agg = allScores.length ? Math.round(allScores.reduce((a, s) => a + s.score, 0) / allScores.length) : null;
   const aggInfo = aggregateLevel(agg);
 
-  const bewertungScore = catAvg([scoreMvrvZ(d.mvrv_z), scoreMayer(d.mayer_multiple)]);
+  const bewertungScore = catAvg([scoreMvrvZ(d.mvrv_z), scoreMvrvRatio(d.mvrv_ratio), scoreMayer(d.mayer_multiple)]);
   const holderScore = catAvg([scoreNupl(d.nupl), scoreSopr(d.sopr), scoreSupply(d.supply_in_profit_pct)]);
   const zyklusScore = catAvg([scorePi(d.pi_cycle_ratio), scoreDD(drawdownPct)]);
   const stimmungScore = catAvg([scoreFG(d.fear_greed)]);
@@ -606,7 +498,7 @@ function render() {
 
     <div class="aggregate bg-${aggInfo.level}">
       <div>
-        <div class="aggregate-label">Aggregat-Score · 8 Metriken</div>
+        <div class="aggregate-label">Aggregat-Score · 9 Metriken</div>
         <div><span class="aggregate-score">${agg ?? '—'}</span><span class="aggregate-score-unit">/ 100</span></div>
         <div class="aggregate-status ${aggInfo.level}">${aggInfo.icon} ${aggInfo.label}</div>
       </div>
@@ -627,6 +519,7 @@ function render() {
       </div>
       <div class="grid">
         ${renderCard('mvrv_z', d, h)}
+        ${renderCard('mvrv_ratio', d, h)}
         ${renderCard('mayer', d, h)}
       </div>
     </div>
