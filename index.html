@@ -115,7 +115,11 @@
     .chevron { color: var(--text-dim); font-size: 10px; transition: transform 0.2s; margin-top: 3px; }
     .metric-card.expanded .chevron { transform: rotate(180deg); }
     .metric-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px solid transparent; }
-    .metric-card.expanded .metric-body { max-height: 500px; border-top-color: var(--border); }
+    .metric-card.expanded .metric-body { 
+      max-height: 1000px; /* Ein Wert, der sicher größer als jeder mögliche Inhalt ist */
+      overflow-y: auto;   /* Falls doch, kann man scrollen */
+      border-top-color: var(--border); 
+    }
     .metric-body-inner { padding: 14px 16px; }
     .metric-info { font-size: 12px; line-height: 1.55; color: var(--text-muted); margin-bottom: 14px; }
     .metric-info strong { color: var(--text); }
@@ -351,7 +355,10 @@ async function loadScoreExplanation() {
     const data = await r.json();
     scoreExplanation = data.explanation;
   } catch (e) {
+    // Den Fehler nur temporär anzeigen, nicht cachen, sodass ein erneuter Klick es wieder versucht.
     scoreExplanation = 'Fehler beim Laden der Analyse: ' + e.message;
+    // Nach 5 Sekunden den Fehler löschen, um einen Retry zu ermöglichen.
+    setTimeout(() => { scoreExplanation = null; }, 5000);
   }
   scoreExplanationLoading = false;
   render();
