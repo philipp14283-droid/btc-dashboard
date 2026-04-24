@@ -48,7 +48,6 @@
     .refreshing .refresh-icon { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     
-    /* Währungs-Schalter */
     .currency-switch {
       display: inline-flex;
       background: var(--bg-card);
@@ -151,7 +150,6 @@
     .error-box { border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.05); padding: 12px; border-radius: 10px; margin-bottom: 16px; font-size: 12px; color: #fca5a5; }
     .loading { text-align: center; padding: 40px; color: var(--text-muted); }
     
-    /* DeepSeek Analyse Button & Box */
     .analyze-btn {
       background: linear-gradient(135deg, #1e2a44, #0f1629);
       border: 1px solid var(--accent);
@@ -207,6 +205,7 @@ async function fetchData() {
   if (isLoading) return;
   isLoading = true;
   lastError = null;
+  scoreExplanation = null; // Cache für Score-Erklärung leeren
   render();
   try {
     const r = await fetch(WORKER_URL);
@@ -235,6 +234,10 @@ function toggleCurrency() {
   localStorage.setItem('btc_currency', currency);
   render();
 }
+
+// ============ DEEPSEEK ANALYSE ============
+let scoreExplanation = null;
+let scoreExplanationLoading = false;
 
 async function requestAnalysis() {
   const btn = document.getElementById('analyzeBtn');
@@ -297,6 +300,61 @@ async function requestAnalysis() {
 
 function closeAnalysis() {
   document.getElementById('analysisBox').style.display = 'none';
+}
+
+async function loadScoreExplanation() {
+  if (scoreExplanation || scoreExplanationLoading) return;
+  if (!lastData?.data) return;
+  scoreExplanationLoading = true;
+  render();
+
+  const d = lastData.data;
+  const drawdownPct = (d.price_usd && d.ath_usd) ? ((d.price_usd - d.ath_usd) / d.ath_usd) * 100 : null;
+
+  const metricScores = [
+    { name: 'MVRV Z-Score', s: scoreMvrvZ(d.mvrv_z), value: d.mvrv_z?.toFixed(2) },
+    { name: 'MVRV Ratio', s: scoreMvrvRatio(d.mvrv_ratio), value: d.mvrv_ratio?.toFixed(2) },
+    { name: 'Mayer Multiple', s: scoreMayer(d.mayer_multiple), value: d.mayer_multiple?.toFixed(2) },
+    { name: 'NUPL', s: scoreNupl(d.nupl), value: d.nupl?.toFixed(2) },
+    { name: 'SOPR', s: scoreSopr(d.sopr), value: d.sopr?.toFixed(3) },
+    { name: 'Supply in Profit', s: scoreSupply(d.supply_in_profit_pct), value: d.supply_in_profit_pct != null ? (d.supply_in_profit_pct * 100).toFixed(1) + '%' : '—' },
+    { name: 'Pi Cycle Top', s: scorePi(d.pi_cycle_ratio), value: d.pi_cycle_ratio?.toFixed(2) },
+    { name: 'Drawdown', s: scoreDD(drawdownPct), value: drawdownPct?.toFixed(1) + '%' },
+    { name: 'Fear & Greed', s: scoreFG(d.fear_greed), value: d.fear_greed },
+  ].filter(x => x.s);
+
+  const allScores = metricScores.map(m => m.s);
+  const agg = Math.round(allScores.reduce((a, s) => a + s.score, 0) / allScores.length);
+  const aggInfo = aggregateLevel(agg);
+
+  const payload = {
+    aggregate_score: agg,
+    level_label: aggInfo.label,
+    category_scores: {
+      bewertung: catAvg([scoreMvrvZ(d.mvrv_z), scoreMvrvRatio(d.mvrv_ratio), scoreMayer(d.mayer_multiple)]),
+      holder: catAvg([scoreNupl(d.nupl), scoreSopr(d.sopr), scoreSupply(d.supply_in_profit_pct)]),
+      zyklus: catAvg([scorePi(d.pi_cycle_ratio), scoreDD(drawdownPct)]),
+      stimmung: catAvg([scoreFG(d.fear_greed)]),
+    },
+    metric_scores: metricScores.map(m => ({
+      name: m.name, score: m.s.score, label: m.s.label, value: m.value,
+    })),
+  };
+
+  try {
+    const r = await fetch(WORKER_URL + '/explain-score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    scoreExplanation = data.explanation;
+  } catch (e) {
+    scoreExplanation = 'Fehler beim Laden der Analyse: ' + e.message;
+  }
+  scoreExplanationLoading = false;
+  render();
 }
 
 // ============ SCORING ============
@@ -551,6 +609,10 @@ function chartReset(svg) {
 
 function toggleCard(key) {
   expandedCard = expandedCard === key ? null : key;
+  // Bei Score-Aufklappen die Erklärung laden (falls via DeepSeek oder statisch)
+  if (expandedCard === 'aggregate' && !scoreExplanation && !scoreExplanationLoading) {
+    setTimeout(loadScoreExplanation, 0);
+  }
   render();
 }
 
@@ -621,6 +683,15 @@ function render() {
 
   const timestamp = lastData?.timestamp ? new Date(lastData.timestamp).toLocaleString('de-CH') : '';
 
+  // Statische Phasen-Erklärung für den Score
+  const phases = [
+    { range: '75–100', level: 'green',  label: 'Akkumulation', icon: '❄️', text: 'Markt breit unterbewertet, Angst dominiert. Historisch die seltenste und wertvollste Phase. Für Holder: DCA konsequent fortsetzen, wenn Liquidität da ist ggf. erhöhen.' },
+    { range: '55–74',  level: 'green',  label: 'Günstig',      icon: '📈', text: 'Fair bis günstig bewertet, noch keine Euphorie. Normale Bullmarkt-Phase ohne Warnsignale. Für Holder: Sparplan unverändert weiterlaufen lassen, keine Aktion nötig.' },
+    { range: '40–54',  level: 'yellow', label: 'Neutral',      icon: '⚖️', text: 'Metriken gemischt, kein klares Bild. Typisch für Übergänge zwischen Marktphasen. Für Holder: abwarten und DCA fortsetzen, keine Gewinnmitnahmen.' },
+    { range: '25–39',  level: 'orange', label: 'Vorsicht',     icon: '⚠️', text: 'Mehrere Metriken zeigen Überhitzung. Kein Zyklustop, aber erhöhtes Risiko. Für Holder: DCA läuft weiter, bei Altcoins (SOL/KAS) erste Stufen-Verkäufe ernsthaft prüfen.' },
+    { range: '0–24',   level: 'red',    label: 'Distribution', icon: '🔥', text: 'Euphoriezone. Historisch nahe Zyklushochs 2013/2017/2021. Für Holder: BTC bleibt – aber Altcoin-Gewinnmitnahmen konsequent ausführen, keine Käufe zu diesen Preisen.' },
+  ];
+
   app.innerHTML = `
     <div class="header">
       <div class="title">
@@ -652,21 +723,73 @@ function render() {
       </div>
     ` : ''}
 
-    <div class="aggregate bg-${aggInfo.level}">
-      <div>
-        <div class="aggregate-label">Aggregat-Score · 9 Metriken</div>
-        <div><span class="aggregate-score">${agg ?? '—'}</span><span class="aggregate-score-unit">/ 100</span></div>
-        <div class="aggregate-status ${aggInfo.level}">${aggInfo.icon} ${aggInfo.label}</div>
+    <!-- Aggregat-Score mit statischer Erklärung -->
+    ${(() => {
+      const aggExpanded = expandedCard === 'aggregate';
+      const isCurrentPhase = (p) => {
+        if (agg == null) return false;
+        if (p.range === '75–100')  return agg >= 75;
+        if (p.range === '55–74')   return agg >= 55 && agg < 75;
+        if (p.range === '40–54')   return agg >= 40 && agg < 55;
+        if (p.range === '25–39')   return agg >= 25 && agg < 40;
+        return agg < 25;
+      };
+
+      return `
+      <div class="aggregate bg-${aggInfo.level} ${aggExpanded ? 'expanded' : ''}"
+           onclick="toggleCard('aggregate')"
+           style="cursor: pointer; flex-direction: column; align-items: stretch;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div>
+            <div class="aggregate-label">Aggregat-Score · 9 Metriken</div>
+            <div><span class="aggregate-score">${agg ?? '—'}</span><span class="aggregate-score-unit">/ 100</span></div>
+            <div class="aggregate-status ${aggInfo.level}">${aggInfo.icon} ${aggInfo.label}</div>
+          </div>
+          <div class="circle-wrap">
+            <svg viewBox="0 0 100 100" width="84" height="84">
+              <circle class="circle-bg" cx="50" cy="50" r="42"/>
+              <circle class="circle-fill ${aggInfo.level}"
+                      stroke="currentColor" cx="50" cy="50" r="42"
+                      stroke-dasharray="${(agg || 0) * 2.64} 264"/>
+            </svg>
+          </div>
+        </div>
+        ${aggExpanded ? `
+          <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border);"
+               onclick="event.stopPropagation();">
+            <div style="font-size: 12px; line-height: 1.6; color: var(--text-muted); margin-bottom: 16px;">
+              Der Aggregat-Score ist der Durchschnitt aus 9 Metriken (Skala 0–100). Er zeigt, wo Bitcoin im Zyklus steht. Höher = besser für Einstieg/Halten, niedriger = Vorsicht.
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${phases.map(p => {
+                const active = isCurrentPhase(p);
+                return `
+                  <div style="padding: 10px 12px; border-radius: 10px; border: 1px solid ${active ? 'var(--' + p.level + ')' : 'var(--border)'}; background: ${active ? 'rgba(255,255,255,0.02)' : 'transparent'}; ${active ? 'box-shadow: 0 0 0 1px var(--' + p.level + ');' : ''}">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 14px;">${p.icon}</span>
+                        <span style="font-weight: 600; font-size: 12.5px;" class="${p.level}">${p.label}</span>
+                        ${active ? '<span style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-left: 4px;">← du bist hier</span>' : ''}
+                      </div>
+                      <span style="font-size: 11px; font-variant-numeric: tabular-nums; color: var(--text-dim);">${p.range}</span>
+                    </div>
+                    <div style="font-size: 11.5px; line-height: 1.5; color: var(--text-muted);">${p.text}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div style="font-size: 10px; color: var(--text-dim); text-align: center; margin-top: 14px; opacity: 0.6;">
+              Tippen zum Schliessen
+            </div>
+          </div>
+        ` : `
+          <div style="font-size: 10px; color: var(--text-dim); text-align: right; margin-top: 6px; opacity: 0.6;">
+            Tippen für Erklärung ▼
+          </div>
+        `}
       </div>
-      <div class="circle-wrap">
-        <svg viewBox="0 0 100 100" width="84" height="84">
-          <circle class="circle-bg" cx="50" cy="50" r="42"/>
-          <circle class="circle-fill ${aggInfo.level}"
-                  stroke="currentColor" cx="50" cy="50" r="42"
-                  stroke-dasharray="${(agg || 0) * 2.64} 264"/>
-        </svg>
-      </div>
-    </div>
+      `;
+    })()}
 
     <div id="analysisBox" class="analysis-box" style="display: none;">
       <div class="analysis-header">
