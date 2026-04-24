@@ -119,6 +119,43 @@
     .stroke-gray   { stroke: var(--text-dim); }
     .error-box { border: 1px solid rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.05); padding: 12px; border-radius: 10px; margin-bottom: 16px; font-size: 12px; color: #fca5a5; }
     .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+    
+    /* DeepSeek Analyse Button & Box */
+    .analyze-btn {
+      background: linear-gradient(135deg, #1e2a44, #0f1629);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 8px;
+    }
+    .analyze-btn:active { transform: scale(0.97); }
+    .analyze-btn:disabled { opacity: 0.5; }
+    .analysis-box {
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .analysis-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+    .analysis-content {
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
   </style>
 </head>
 <body>
@@ -148,6 +185,71 @@ async function fetchData() {
   }
   isLoading = false;
   render();
+}
+
+// ============ DEEPSEEK ANALYSE ============
+async function requestAnalysis() {
+  const btn = document.getElementById('analyzeBtn');
+  const box = document.getElementById('analysisBox');
+  const content = document.getElementById('analysisContent');
+  
+  if (!lastData || !lastData.data) {
+    alert('Bitte zuerst Daten laden.');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span> Analysiere...';
+  box.style.display = 'block';
+  content.innerHTML = '🧠 DeepSeek denkt nach...';
+  
+  try {
+    const d = lastData.data;
+    const drawdownPct = (d.price_chf && d.ath_chf) 
+      ? ((d.price_chf - d.ath_chf) / d.ath_chf) * 100 
+      : null;
+    
+    const payload = {
+      timestamp: lastData.timestamp,
+      price_chf: d.price_chf,
+      price_usd: d.price_chf ? d.price_chf / 0.9 : null, // USD/CHF Default wie im Worker
+      drawdown_pct: drawdownPct,
+      mvrv_z: d.mvrv_z,
+      mvrv_ratio: d.mvrv_ratio,
+      mayer_multiple: d.mayer_multiple,
+      nupl: d.nupl,
+      sopr: d.sopr,
+      supply_in_profit_pct: d.supply_in_profit_pct,
+      pi_cycle_ratio: d.pi_cycle_ratio,
+      fear_greed: d.fear_greed,
+      hashrate_30d_change_pct: d.hashrate_30d_change_pct
+    };
+    
+    const response = await fetch(WORKER_URL + '/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    const result = await response.json();
+    if (result.error) throw new Error(result.error);
+    
+    // Stichpunkte schön formatieren
+    let analysisHtml = result.analysis
+      .replace(/- /g, '• ')
+      .replace(/\n/g, '<br>');
+    
+    content.innerHTML = analysisHtml;
+  } catch (e) {
+    content.innerHTML = `<span style="color: var(--red);">Fehler: ${e.message}</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>🧠</span> Experten-Analyse';
+  }
+}
+
+function closeAnalysis() {
+  document.getElementById('analysisBox').style.display = 'none';
 }
 
 // ============ SCORING ============
@@ -478,10 +580,15 @@ function render() {
         <div class="btc-icon">₿</div>
         <div>On-Chain Dashboard</div>
       </div>
-      <button class="refresh-btn ${isLoading ? 'refreshing' : ''}" onclick="fetchData()" ${isLoading ? 'disabled' : ''}>
-        <span class="refresh-icon">↻</span>
-        ${isLoading ? 'Lädt…' : 'Aktualisieren'}
-      </button>
+      <div style="display: flex; align-items: center;">
+        <button class="refresh-btn ${isLoading ? 'refreshing' : ''}" onclick="fetchData()" ${isLoading ? 'disabled' : ''}>
+          <span class="refresh-icon">↻</span>
+          ${isLoading ? 'Lädt…' : 'Aktualisieren'}
+        </button>
+        <button class="analyze-btn" id="analyzeBtn" onclick="requestAnalysis()">
+          <span>🧠</span> Experten-Analyse
+        </button>
+      </div>
     </div>
 
     ${lastError ? `<div class="error-box"><strong>Fehler:</strong> ${lastError}</div>` : ''}
@@ -510,6 +617,14 @@ function render() {
                   stroke-dasharray="${(agg || 0) * 2.64} 264"/>
         </svg>
       </div>
+    </div>
+
+    <div id="analysisBox" class="analysis-box" style="display: none;">
+      <div class="analysis-header">
+        <span>🧠 DeepSeek Expertenmodus</span>
+        <button onclick="closeAnalysis()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;">✕</button>
+      </div>
+      <div id="analysisContent" class="analysis-content">Lade Analyse...</div>
     </div>
 
     <div class="category">
