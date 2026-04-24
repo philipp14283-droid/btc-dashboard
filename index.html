@@ -632,7 +632,30 @@ ${(() => {
       const expl = levelExplanation[levelKey];
 
       return `
-      <div class="aggregate bg-${aggInfo.level} ${aggExpanded ? 'expanded' : ''}" onclick="toggleCard('aggregate')" style="cursor: pointer; flex-direction: column; align-items: stretch;">
+      
+${(() => {
+      const aggExpanded = expandedCard === 'aggregate';
+      const phases = [
+        { range: '75–100', level: 'green',  label: 'Akkumulation', icon: '❄️', text: 'Markt breit unterbewertet, Angst dominiert. Historisch die seltenste und wertvollste Phase. Für Holder: DCA konsequent fortsetzen, wenn Liquidität da ist ggf. erhöhen.' },
+        { range: '55–74',  level: 'green',  label: 'Günstig',      icon: '📈', text: 'Fair bis günstig bewertet, noch keine Euphorie. Normale Bullmarkt-Phase ohne Warnsignale. Für Holder: Sparplan unverändert weiterlaufen lassen, keine Aktion nötig.' },
+        { range: '40–54',  level: 'yellow', label: 'Neutral',      icon: '⚖️', text: 'Metriken gemischt, kein klares Bild. Typisch für Übergänge zwischen Marktphasen. Für Holder: abwarten und DCA fortsetzen, keine Gewinnmitnahmen.' },
+        { range: '25–39',  level: 'orange', label: 'Vorsicht',     icon: '⚠️', text: 'Mehrere Metriken zeigen Überhitzung. Kein Zyklustop, aber erhöhtes Risiko. Für Holder: DCA läuft weiter, bei Altcoins (SOL/KAS) erste Stufen-Verkäufe ernsthaft prüfen.' },
+        { range: '0–24',   level: 'red',    label: 'Distribution', icon: '🔥', text: 'Euphoriezone. Historisch nahe Zyklushochs 2013/2017/2021. Für Holder: BTC bleibt – aber Altcoin-Gewinnmitnahmen konsequent ausführen, keine Käufe zu diesen Preisen.' },
+      ];
+      const currentLevel = aggInfo.level + (agg >= 75 ? '_acc' : agg >= 55 ? '_cheap' : '');
+      const isCurrentPhase = (p) => {
+        if (agg == null) return false;
+        if (p.range === '75–100')  return agg >= 75;
+        if (p.range === '55–74')   return agg >= 55 && agg < 75;
+        if (p.range === '40–54')   return agg >= 40 && agg < 55;
+        if (p.range === '25–39')   return agg >= 25 && agg < 40;
+        return agg < 25;
+      };
+
+      return `
+      <div class="aggregate bg-${aggInfo.level} ${aggExpanded ? 'expanded' : ''}"
+           onclick="toggleCard('aggregate')"
+           style="cursor: pointer; flex-direction: column; align-items: stretch;">
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <div>
             <div class="aggregate-label">Aggregat-Score · 9 Metriken</div>
@@ -648,6 +671,42 @@ ${(() => {
             </svg>
           </div>
         </div>
+        ${aggExpanded ? `
+          <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border);"
+               onclick="event.stopPropagation();">
+            <div style="font-size: 12px; line-height: 1.6; color: var(--text-muted); margin-bottom: 16px;">
+              Der Aggregat-Score ist der Durchschnitt aus 9 Metriken (Skala 0–100). Er zeigt, wo Bitcoin im Zyklus steht. Höher = besser für Einstieg/Halten, niedriger = Vorsicht.
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${phases.map(p => {
+                const active = isCurrentPhase(p);
+                return `
+                  <div style="padding: 10px 12px; border-radius: 10px; border: 1px solid ${active ? 'var(--' + p.level + ')' : 'var(--border)'}; background: ${active ? 'rgba(255,255,255,0.02)' : 'transparent'}; ${active ? 'box-shadow: 0 0 0 1px var(--' + p.level + ');' : ''}">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 14px;">${p.icon}</span>
+                        <span style="font-weight: 600; font-size: 12.5px;" class="${p.level}">${p.label}</span>
+                        ${active ? '<span style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-left: 4px;">← du bist hier</span>' : ''}
+                      </div>
+                      <span style="font-size: 11px; font-variant-numeric: tabular-nums; color: var(--text-dim);">${p.range}</span>
+                    </div>
+                    <div style="font-size: 11.5px; line-height: 1.5; color: var(--text-muted);">${p.text}</div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            <div style="font-size: 10px; color: var(--text-dim); text-align: center; margin-top: 14px; opacity: 0.6;">
+              Tippen zum Schliessen
+            </div>
+          </div>
+        ` : `
+          <div style="font-size: 10px; color: var(--text-dim); text-align: right; margin-top: 6px; opacity: 0.6;">
+            Tippen für Erklärung ▼
+          </div>
+        `}
+      </div>
+      `;
+    })()}
         ${aggExpanded ? `
           <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border);">
             <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;" class="${aggInfo.level}">${expl.title}</div>
