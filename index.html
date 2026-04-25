@@ -116,9 +116,9 @@
     .metric-card.expanded .chevron { transform: rotate(180deg); }
     .metric-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; border-top: 1px solid transparent; }
     .metric-card.expanded .metric-body { 
-      max-height: 1000px; /* Ein Wert, der sicher größer als jeder mögliche Inhalt ist */
-      overflow-y: auto;   /* Falls doch, kann man scrollen */
-      border-top-color: var(--border); 
+      max-height: 2000px;   /* groß genug, damit nichts abgeschnitten wird */
+      overflow: hidden;     /* keine Scrollbalken mehr */
+      border-top-color: var(--border);
     }
     .metric-body-inner { padding: 14px 16px; }
     .metric-info { font-size: 12px; line-height: 1.55; color: var(--text-muted); margin-bottom: 14px; }
