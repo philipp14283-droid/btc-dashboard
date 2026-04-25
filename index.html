@@ -662,8 +662,9 @@ function renderCard(key, data, history) {
   const hist = history?.[m.historyKey];
   const tooltipId = 'tt-' + key;
   return `
-    <div class="metric-card bg-${level} ${isExpanded ? 'expanded' : ''}" data-key="${key}">
-      <div class="metric-head" onclick="toggleCard('${key}')">
+    <div class="metric-card bg-${level} ${isExpanded ? 'expanded' : ''}" data-key="${key}"
+    onclick="toggleCard('${key}')">>
+      <div class="metric-head">
         <div class="metric-main">
           <div class="metric-title-row">${m.title}</div>
           <div class="metric-desc">${m.desc}</div>
@@ -790,8 +791,7 @@ function render() {
           </div>
         </div>
         ${aggExpanded ? `
-          <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border);"
-               onclick="event.stopPropagation();">
+          <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border);">
             <div style="font-size: 12px; line-height: 1.6; color: var(--text-muted); margin-bottom: 16px;">
               Der Aggregat-Score ist der Durchschnitt aus 9 Metriken (Skala 0–100). Er zeigt, wo Bitcoin im Zyklus steht. Höher = besser für Einstieg/Halten, niedriger = Vorsicht.
             </div>
