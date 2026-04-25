@@ -664,7 +664,7 @@ function renderCard(key, data, history) {
   const tooltipId = 'tt-' + key;
   return `
     <div class="metric-card bg-${level} ${isExpanded ? 'expanded' : ''}" data-key="${key}"
-    onclick="toggleCard('${key}')">>
+    onclick="toggleCard('${key}')">
       <div class="metric-head">
         <div class="metric-main">
           <div class="metric-title-row">${m.title}</div>
