@@ -189,6 +189,31 @@
       line-height: 1.6;
       white-space: pre-line;
     }
+
+    
+    /* Mobile Optimierung – Buttons umbrechen auf kleinen Bildschirmen */
+    @media (max-width: 480px) {
+      .header {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .header > div:last-child {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .currency-switch {
+        margin-right: 0;
+      }
+      .refresh-btn, .analyze-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .analyze-btn {
+        margin-left: 0;
+      }
+    }
   </style>
 </head>
 <body>
