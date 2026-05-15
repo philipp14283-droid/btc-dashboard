@@ -356,6 +356,9 @@ async function loadScoreExplanation() {
   const allScores = metricScores.map(m => m.s);
   const agg = Math.round(allScores.reduce((a, s) => a + s.score, 0) / allScores.length);
   const aggInfo = aggregateLevel(agg);
+  // Preis-Override: Bei ≥ 200'000 CHF immer Verkaufswarnung
+  const priceChf = d.price_usd ? convertPrice(d.price_usd) : (d.price_chf || 0);
+  const priceOverride = priceChf >= 200000;
 
   const payload = {
     aggregate_score: agg,
@@ -718,11 +721,11 @@ function render() {
 
   // Statische Phasen-Erklärung für den Score
   const phases = [
-    { range: '75–100', level: 'green',  label: 'Akkumulation', icon: '❄️', text: 'Markt breit unterbewertet, Angst dominiert. Historisch die seltenste und wertvollste Phase. Für Holder: DCA konsequent fortsetzen, wenn Liquidität da ist ggf. erhöhen.' },
+    { range: '75–100', level: 'green',  label: 'Akkumulation', icon: '❄️', text: 'Markt breit unterbewertet, Angst dominiert. Historisch die seltenste und wertvollste Phase. Für Holder: DCA konsequent fortsetzen, wenn Liquidität da ist ggf. erhöhen. Rückkauf-Zone wenn du vorher verkauft hast.' },
     { range: '55–74',  level: 'green',  label: 'Günstig',      icon: '📈', text: 'Fair bis günstig bewertet, noch keine Euphorie. Normale Bullmarkt-Phase ohne Warnsignale. Für Holder: Sparplan unverändert weiterlaufen lassen, keine Aktion nötig.' },
     { range: '40–54',  level: 'yellow', label: 'Neutral',      icon: '⚖️', text: 'Metriken gemischt, kein klares Bild. Typisch für Übergänge zwischen Marktphasen. Für Holder: abwarten und DCA fortsetzen, keine Gewinnmitnahmen.' },
-    { range: '25–39',  level: 'orange', label: 'Vorsicht',     icon: '⚠️', text: 'Mehrere Metriken zeigen Überhitzung. Kein Zyklustop, aber erhöhtes Risiko. Für Holder: DCA läuft weiter, bei Altcoins (SOL/KAS) erste Stufen-Verkäufe ernsthaft prüfen.' },
-    { range: '0–24',   level: 'red',    label: 'Distribution', icon: '🔥', text: 'Euphoriezone. Historisch nahe Zyklushochs 2013/2017/2021. Für Holder: BTC bleibt – aber Altcoin-Gewinnmitnahmen konsequent ausführen, keine Käufe zu diesen Preisen.' },
+    { range: '25–39',  level: 'orange', label: 'Vorsicht',     icon: '⚠️', text: 'Mehrere Metriken zeigen Überhitzung. Kein Zyklustop, aber erhöhtes Risiko. Für Holder: DCA läuft weiter, bei Altcoins (SOL/KAS) erste Stufen-Verkäufe ernsthaft prüfen. BTC: noch kein Verkauf.' },
+    { range: '0–24',   level: 'red',    label: 'Distribution', icon: '🔥', text: 'Euphoriezone. Historisch nahe Zyklushochs. Für Holder: 0.02 BTC verkaufen → Cash halten. Altcoin-Verkäufe konsequent ausführen. Auf Rückkauf bei Score > 75 warten.' },
   ];
 
   app.innerHTML = `
@@ -763,6 +766,7 @@ function render() {
     ${(() => {
       const aggExpanded = expandedCard === 'aggregate';
       const isCurrentPhase = (p) => {
+        if (priceOverride) return p.range === '0–24'; // Preis-Override → immer Distribution hervorheben
         if (agg == null) return false;
         if (p.range === '75–100')  return agg >= 75;
         if (p.range === '55–74')   return agg >= 55 && agg < 75;
@@ -780,6 +784,12 @@ function render() {
             <div class="aggregate-label">Aggregat-Score · 9 Metriken</div>
             <div><span class="aggregate-score">${agg ?? '—'}</span><span class="aggregate-score-unit">/ 100</span></div>
             <div class="aggregate-status ${aggInfo.level}">${aggInfo.icon} ${aggInfo.label}</div>
+            ${priceOverride ? `
+        <div style="margin-top: 8px; padding: 8px 12px; background: rgba(248,113,113,0.15); border: 1px solid rgba(248,113,113,0.4); border-radius: 8px; font-size: 12px; color: #fca5a5; font-weight: 600;">
+          🔴 PREIS-ALARM: ${fmtInt(priceChf)} ${currency} ≥ 200'000 CHF<br>
+          <span style="font-weight: 400; font-size: 11px;">Verkaufsregel aktiv – unabhängig vom Score.<br>Nächste Aktion: 0.02 BTC verkaufen → Cash halten.</span>
+        </div>
+      ` : ''}
           </div>
           <div class="circle-wrap">
             <svg viewBox="0 0 100 100" width="84" height="84">
